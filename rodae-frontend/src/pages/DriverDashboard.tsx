@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, Star, Clock, TrendingUp, MapPin, Navigation2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import ListaCorridas from "@/components/ListaCorridas";
+import CorridasDisponiveis from "@/components/CorridasDisponiveis";
 import { useToast } from "@/hooks/use-toast";
 
 const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { toast } = useToast();
 
   const handleToggleOnline = () => {
@@ -18,12 +22,6 @@ const DriverDashboard = () => {
         : "Agora você pode receber solicitações de corrida.",
     });
   };
-
-  const todayEarnings = [
-    { time: "14:30", origin: "Centro", destination: "Shopping", value: "R$ 25,00", rating: 5 },
-    { time: "16:15", origin: "Aeroporto", destination: "Jardins", value: "R$ 65,00", rating: 5 },
-    { time: "18:45", origin: "Vila Nova", destination: "Centro", value: "R$ 18,00", rating: 4 },
-  ];
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -109,39 +107,41 @@ const DriverDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Today's Rides */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Corridas de Hoje</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {todayEarnings.map((ride, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Navigation2 className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">{ride.origin} → {ride.destination}</p>
-                        <p className="text-sm text-muted-foreground">{ride.time}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg text-primary">{ride.value}</p>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Star className="w-4 h-4 fill-accent text-accent" />
-                        <span>{ride.rating}.0</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Corridas Disponíveis ou Minhas Corridas */}
+          <div className="lg:col-span-2">
+            {isOnline ? (
+              <CorridasDisponiveis />
+            ) : (
+              <Tabs defaultValue="em_andamento" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                  <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                  <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
+                </TabsList>
+                <TabsContent value="em_andamento" className="mt-6">
+                  <ListaCorridas 
+                    filtroStatus="EM_ANDAMENTO" 
+                    titulo="Minhas Corridas em Andamento"
+                    refresh={refreshKey}
+                  />
+                </TabsContent>
+                <TabsContent value="finalizadas" className="mt-6">
+                  <ListaCorridas 
+                    filtroStatus="FINALIZADA" 
+                    titulo="Corridas Finalizadas"
+                    refresh={refreshKey}
+                  />
+                </TabsContent>
+                <TabsContent value="canceladas" className="mt-6">
+                  <ListaCorridas 
+                    filtroStatus="CANCELADA" 
+                    titulo="Corridas Canceladas"
+                    refresh={refreshKey}
+                  />
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
 
           {/* Quick Actions */}
           <div className="space-y-6">

@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Car, DollarSign, TrendingUp, Activity, CheckCircle, XCircle, Eye, Trash2, Clock } from "lucide-react";
+import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
+import ListaCorridas from "@/components/ListaCorridas";
 
 interface Motorista {
   id: number;
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeletePassageiroDialog, setShowDeletePassageiroDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshCorridas, setRefreshCorridas] = useState(0);
 
   const loadMotoristas = async () => {
     try {
@@ -66,11 +68,12 @@ const AdminDashboard = () => {
       
       setMotoristasPendentes(motoristas.filter((m: Motorista) => m.status === 'PENDENTE'));
       setMotoristasAtivos(motoristas.filter((m: Motorista) => m.status === 'ATIVO'));
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao carregar motoristas:', error);
       toast({
         title: "Erro ao carregar motoristas",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -83,11 +86,12 @@ const AdminDashboard = () => {
       console.log('Passageiros recebidos:', response);
       
       setPassageiros(response.data || []);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao carregar passageiros:', error);
       toast({
         title: "Erro ao carregar passageiros",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -96,7 +100,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadMotoristas();
     loadPassageiros();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewDetails = (motorista: Motorista) => {
     setSelectedMotorista(motorista);
@@ -113,10 +117,11 @@ const AdminDashboard = () => {
       });
       await loadMotoristas();
       setShowDetailsDialog(false);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao aprovar motorista",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -138,10 +143,11 @@ const AdminDashboard = () => {
       await loadMotoristas();
       setShowDeleteDialog(false);
       setShowDetailsDialog(false);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao desativar motorista",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -162,10 +168,11 @@ const AdminDashboard = () => {
       await loadPassageiros();
       setShowDeletePassageiroDialog(false);
       setShowPassageiroDialog(false);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao desativar passageiro",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -229,7 +236,7 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Tabs para Motoristas */}
+        {/* Tabs para Motoristas e Corridas */}
         <Tabs defaultValue="pendentes" className="space-y-4">
           <TabsList>
             <TabsTrigger value="pendentes" className="gap-2">
@@ -243,6 +250,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="passageiros" className="gap-2">
               <Users className="w-4 h-4" />
               Passageiros ({passageiros.length})
+            </TabsTrigger>
+            <TabsTrigger value="corridas" className="gap-2">
+              <MapPin className="w-4 h-4" />
+              Corridas
             </TabsTrigger>
           </TabsList>
 
@@ -427,6 +438,46 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="corridas">
+            <Tabs defaultValue="em_andamento" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="em_andamento">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Em Andamento
+                </TabsTrigger>
+                <TabsTrigger value="finalizadas">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Finalizadas
+                </TabsTrigger>
+                <TabsTrigger value="canceladas">
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Canceladas
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="em_andamento" className="mt-6">
+                <ListaCorridas 
+                  filtroStatus="EM_ANDAMENTO" 
+                  titulo="Corridas em Andamento"
+                  refresh={refreshCorridas}
+                />
+              </TabsContent>
+              <TabsContent value="finalizadas" className="mt-6">
+                <ListaCorridas 
+                  filtroStatus="FINALIZADA" 
+                  titulo="Corridas Finalizadas"
+                  refresh={refreshCorridas}
+                />
+              </TabsContent>
+              <TabsContent value="canceladas" className="mt-6">
+                <ListaCorridas 
+                  filtroStatus="CANCELADA" 
+                  titulo="Corridas Canceladas"
+                  refresh={refreshCorridas}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
 
