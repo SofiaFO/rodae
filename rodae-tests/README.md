@@ -1,7 +1,5 @@
 # 🧪 Rodaê - Testes E2E com Selenium
 
-# 🧪 Rodaê - Testes E2E Automatizados
-
 Testes automatizados end-to-end usando Selenium WebDriver para o sistema Rodaê.
 
 ## 🪟 PARA USUÁRIOS WINDOWS
