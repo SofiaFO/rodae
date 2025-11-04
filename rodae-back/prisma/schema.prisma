@@ -1,0 +1,162 @@
+// schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// =====================
+// Usuários
+// =====================
+model Usuario {
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(100)
+  email     String    @unique
+  telefone  String
+  senha     String
+  tipo      UsuarioTipo
+  status    UsuarioStatus @default(PENDENTE)
+  criadoEm  DateTime  @default(now())
+
+  passageiro Passageiro?
+  motorista  Motorista?
+  corridasAsPassageiro Corrida[] @relation("CorridasPassageiro")
+  corridasAsMotorista Corrida[] @relation("CorridasMotorista")
+  avaliacoesFeitas Avaliacao[] @relation("AvaliacoesFeitas")
+  avaliacoesRecebidas Avaliacao[] @relation("AvaliacoesRecebidas")
+  notificacoes   Notificacao[]
+}
+
+enum UsuarioTipo {
+  PASSAGEIRO
+  MOTORISTA
+  ADMIN
+}
+
+enum UsuarioStatus {
+  ATIVO
+  INATIVO
+  PENDENTE
+}
+
+// =====================
+// Passageiro (dados específicos)
+// =====================
+model Passageiro {
+  id          Int       @id
+  usuario     Usuario   @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+// =====================
+// Motorista (dados específicos)
+// =====================
+model Motorista {
+  id            Int       @id
+  usuario       Usuario   @relation(fields: [id], references: [id], onDelete: Cascade)
+  cnh           String    @unique
+  validadeCNH   DateTime
+  docVeiculo    String
+  placaVeiculo  String    @unique
+  modeloCorVeiculo String
+}
+
+// =====================
+// Corridas
+// =====================
+model Corrida {
+  id            Int        @id @default(autoincrement())
+  passageiro    Usuario    @relation("CorridasPassageiro", fields: [passageiroId], references: [id])
+  passageiroId  Int
+  motorista     Usuario?   @relation("CorridasMotorista", fields: [motoristaId], references: [id])
+  motoristaId   Int?
+  origem        String
+  destino       String
+  formaPagamento FormaPagamento
+  opcaoCorrida   OpcaoCorrida
+  status        CorridaStatus @default(EM_ANDAMENTO)
+  valorEstimado Float
+  criadoEm      DateTime      @default(now())
+  atualizadoEm  DateTime      @updatedAt
+
+  pagamento     Pagamento?
+  avaliacao     Avaliacao?
+}
+
+enum FormaPagamento {
+  PIX
+  CARTAO_CREDITO
+  CARTEIRA_DIGITAL
+}
+
+enum OpcaoCorrida {
+  PADRAO
+  PREMIUM
+  COMPARTILHADA
+}
+
+enum CorridaStatus {
+  EM_ANDAMENTO
+  FINALIZADA
+  CANCELADA
+}
+
+// =====================
+// Pagamentos
+// =====================
+model Pagamento {
+  id          Int         @id @default(autoincrement())
+  corrida     Corrida     @relation(fields: [corridaId], references: [id])
+  corridaId   Int         @unique
+  valor       Float
+  forma       FormaPagamento
+  status      PagamentoStatus @default(PENDENTE)
+  criadoEm    DateTime    @default(now())
+  atualizadoEm DateTime   @updatedAt
+}
+
+enum PagamentoStatus {
+  PENDENTE
+  PAGO
+  FALHOU
+  ESTORNADO
+}
+
+// =====================
+// Avaliações
+// =====================
+model Avaliacao {
+  id          Int       @id @default(autoincrement())
+  corrida     Corrida   @relation(fields: [corridaId], references: [id])
+  corridaId   Int       @unique
+  nota        Int
+  comentario  String?   @db.VarChar(200)
+  usuarioDe   Usuario   @relation("AvaliacoesFeitas", fields: [usuarioDeId], references: [id])
+  usuarioDeId Int
+  usuarioPara Usuario   @relation("AvaliacoesRecebidas", fields: [usuarioParaId], references: [id])
+  usuarioParaId Int
+  criadoEm    DateTime  @default(now())
+}
+
+// =====================
+// Notificações
+// =====================
+model Notificacao {
+  id          Int       @id @default(autoincrement())
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int
+  tipo        TipoNotificacao
+  mensagem    String
+  lida        Boolean   @default(false)
+  criadoEm    DateTime  @default(now())
+}
+
+enum TipoNotificacao {
+  CORRIDA_ACEITA
+  MOTORISTA_A_CAMINHO
+  CORRIDA_FINALIZADA
+  PAGAMENTO_CONFIRMADO
+  PROMOCAO
+}
