@@ -346,4 +346,153 @@ export const api = {
 
     return data;
   },
+
+  // Corridas
+  async createCorrida(token: string, corridaData: {
+    origem: string;
+    destino: string;
+    formaPagamento: 'PIX' | 'CARTAO_CREDITO' | 'CARTEIRA_DIGITAL';
+    opcaoCorrida: 'PADRAO' | 'PREMIUM' | 'COMPARTILHADA';
+    origemLat?: number;
+    origemLng?: number;
+    destinoLat?: number;
+    destinoLng?: number;
+  }) {
+    const response = await fetch(`${API_URL}/corridas`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(corridaData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao solicitar corrida');
+    }
+
+    return data;
+  },
+
+  async getCorridas(token: string, filters?: {
+    status?: 'EM_ANDAMENTO' | 'FINALIZADA' | 'CANCELADA';
+    dataInicio?: string;
+    dataFim?: string;
+    passageiroId?: number;
+    motoristaId?: number;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.status) queryParams.append('status', filters.status);
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.passageiroId) queryParams.append('passageiroId', filters.passageiroId.toString());
+    if (filters?.motoristaId) queryParams.append('motoristaId', filters.motoristaId.toString());
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/corridas?${queryParams.toString()}`
+      : `${API_URL}/corridas`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar corridas');
+    }
+
+    return data;
+  },
+
+  async getCorridaById(token: string, id: number) {
+    const response = await fetch(`${API_URL}/corridas/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar corrida');
+    }
+
+    return data;
+  },
+
+  async getCorridasDisponiveis(token: string) {
+    const response = await fetch(`${API_URL}/corridas/disponiveis`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar corridas disponíveis');
+    }
+
+    return data;
+  },
+
+  async aceitarCorrida(token: string, id: number) {
+    const response = await fetch(`${API_URL}/corridas/${id}/aceitar`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao aceitar corrida');
+    }
+
+    return data;
+  },
+
+  async cancelarCorrida(token: string, id: number, motivo?: string) {
+    const response = await fetch(`${API_URL}/corridas/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ motivo: motivo || '' }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cancelar corrida');
+    }
+
+    return data;
+  },
+
+  async updateCorrida(token: string, id: number, updateData: any) {
+    const response = await fetch(`${API_URL}/corridas/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao atualizar corrida');
+    }
+
+    return data;
+  },
 };
