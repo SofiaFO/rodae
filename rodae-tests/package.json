@@ -1,0 +1,33 @@
+{
+  "name": "rodae-tests",
+  "version": "1.0.0",
+  "description": "Testes E2E automatizados com Selenium para o projeto Rodaê",
+  "main": "index.js",
+  "scripts": {
+    "setup": "node setup-windows.js",
+    "test": "node run-all-tests.js",
+    "test:all": "node run-all-tests.js",
+    "test:passageiro": "node tests/passageiro-standalone.test.js",
+    "test:motorista": "node tests/motorista-standalone.test.js",
+    "test:admin": "node tests/admin-standalone.test.js"
+  },
+  "keywords": [
+    "selenium",
+    "test",
+    "automation",
+    "e2e"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chromedriver": "^142.0.0",
+    "colors": "^1.4.0",
+    "jest": "^29.7.0",
+    "selenium-webdriver": "^4.25.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 60000,
+    "verbose": true
+  }
+}
