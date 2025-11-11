@@ -7,13 +7,14 @@ const passageiroRoutes = require('./routes/passageiro.routes');
 const motoristaRoutes = require('./routes/motorista.routes');
 const corridaRoutes = require('./routes/corrida.routes');
 const adminRoutes = require('./routes/admin.routes');
+const metodoPagamentoRoutes = require('./routes/metodoPagamento.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors({
-  origin: ['http://localhost:8081'],
+  origin: ['http://localhost:8080'],
   credentials: true
 }));
 app.use(express.json());
@@ -30,6 +31,7 @@ app.use('/api/passageiros', passageiroRoutes);
 app.use('/api/motoristas', motoristaRoutes);
 app.use('/api/corridas', corridaRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/metodos-pagamento', metodoPagamentoRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
