@@ -9,7 +9,8 @@
     "test:all": "node run-all-tests.js",
     "test:passageiro": "node tests/passageiro-standalone.test.js",
     "test:motorista": "node tests/motorista-standalone.test.js",
-    "test:admin": "node tests/admin-standalone.test.js"
+    "test:admin": "node tests/admin-standalone.test.js",
+    "test:corridas": "node tests/corrida.test.js"
   },
   "keywords": [
     "selenium",

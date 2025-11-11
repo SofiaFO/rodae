@@ -44,7 +44,7 @@ async function testeAdmin() {
       await emailInput.clear();
       await emailInput.sendKeys('admin@rodae.com');
       await senhaInput.clear();
-      await senhaInput.sendKeys('admin123');
+      await senhaInput.sendKeys('123456');
 
       const loginButton = await driver.findElement(By.css('button[type="submit"]'));
       await loginButton.click();

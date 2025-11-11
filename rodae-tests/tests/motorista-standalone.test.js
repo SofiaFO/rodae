@@ -122,9 +122,9 @@ async function testeMotorista() {
       const senhaInput = await driver.findElement(By.css('input[id="password-login"]'));
       
       await emailInput.clear();
-      await emailInput.sendKeys('joao@gmail.com');
+      await emailInput.sendKeys('marcelo.dias@email.com');
       await senhaInput.clear();
-      await senhaInput.sendKeys('senha');
+      await senhaInput.sendKeys('123456');
 
       const loginButton = await driver.findElement(By.css('button[type="submit"]'));
       await loginButton.click();
