@@ -1,27 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, CreditCard, Navigation } from "lucide-react";
+import { MapPin, CreditCard, Navigation, Wallet, QrCode, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 
 interface SolicitarCorridaProps {
   onCorridaCriada?: () => void;
 }
 
+interface FormaPagamento {
+  id: number;
+  tipoPagamento: 'CARTAO_CREDITO' | 'PIX' | 'CARTEIRA_DIGITAL';
+  nomeNoCartao?: string;
+  ultimosDigitos?: string;
+  status: 'ATIVO' | 'EXPIRADO';
+}
+
 const SolicitarCorrida = ({ onCorridaCriada }: SolicitarCorridaProps) => {
   const { token } = useAuthStore();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([]);
 
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
   const [opcaoCorrida, setOpcaoCorrida] = useState<'PADRAO' | 'PREMIUM' | 'COMPARTILHADA'>('PADRAO');
-  const [formaPagamento, setFormaPagamento] = useState<'PIX' | 'CARTAO_CREDITO' | 'CARTEIRA_DIGITAL'>('PIX');
+  const [formaPagamentoId, setFormaPagamentoId] = useState<string>("");
+
+  useEffect(() => {
+    loadFormasPagamento();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadFormasPagamento = async () => {
+    try {
+      const response = await api.getFormasPagamento(token!);
+      const formasAtivas = (response.data || []).filter((f: FormaPagamento) => f.status === 'ATIVO');
+      setFormasPagamento(formasAtivas);
+    } catch (error) {
+      console.error('Erro ao carregar formas de pagamento:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +60,24 @@ const SolicitarCorrida = ({ onCorridaCriada }: SolicitarCorridaProps) => {
       return;
     }
 
+    if (!formaPagamentoId) {
+      toast({
+        title: "Forma de pagamento necessária",
+        description: "Selecione uma forma de pagamento ou cadastre uma nova.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      const formaSelecionada = formasPagamento.find(f => f.id.toString() === formaPagamentoId);
+      
       const response = await api.createCorrida(token!, {
         origem,
         destino,
-        formaPagamento,
+        formaPagamento: formaSelecionada?.tipoPagamento || 'PIX',
         opcaoCorrida,
       });
 
@@ -74,6 +110,32 @@ const SolicitarCorrida = ({ onCorridaCriada }: SolicitarCorridaProps) => {
     PADRAO: 18,
     PREMIUM: 25,
     COMPARTILHADA: 15,
+  };
+
+  const getTipoIcon = (tipo: string) => {
+    switch (tipo) {
+      case 'CARTAO_CREDITO':
+        return <CreditCard className="w-4 h-4" />;
+      case 'PIX':
+        return <QrCode className="w-4 h-4" />;
+      case 'CARTEIRA_DIGITAL':
+        return <Wallet className="w-4 h-4" />;
+      default:
+        return <CreditCard className="w-4 h-4" />;
+    }
+  };
+
+  const getTipoLabel = (tipo: string) => {
+    switch (tipo) {
+      case 'CARTAO_CREDITO':
+        return 'Cartão';
+      case 'PIX':
+        return 'PIX';
+      case 'CARTEIRA_DIGITAL':
+        return 'Carteira';
+      default:
+        return tipo;
+    }
   };
 
   return (
@@ -160,20 +222,51 @@ const SolicitarCorrida = ({ onCorridaCriada }: SolicitarCorridaProps) => {
           {/* Forma de Pagamento */}
           <div className="space-y-2">
             <Label htmlFor="pagamento">Forma de Pagamento</Label>
-            <Select value={formaPagamento} onValueChange={(value) => setFormaPagamento(value as 'PIX' | 'CARTAO_CREDITO' | 'CARTEIRA_DIGITAL')}>
-              <SelectTrigger id="pagamento">
-                <CreditCard className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PIX">PIX</SelectItem>
-                <SelectItem value="CARTAO_CREDITO">Cartão de Crédito</SelectItem>
-                <SelectItem value="CARTEIRA_DIGITAL">Carteira Digital</SelectItem>
-              </SelectContent>
-            </Select>
+            {formasPagamento.length === 0 ? (
+              <div className="text-sm text-muted-foreground bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="flex gap-2 items-start">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold mb-1">⚠️ Nenhuma forma de pagamento cadastrada</p>
+                    <p className="mb-2">Você precisa cadastrar uma forma de pagamento antes de solicitar uma corrida.</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => navigate('/formas-pagamento')}
+                    >
+                      Cadastrar Forma de Pagamento
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Select value={formaPagamentoId} onValueChange={setFormaPagamentoId}>
+                <SelectTrigger id="pagamento">
+                  <SelectValue placeholder="Selecione uma forma de pagamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  {formasPagamento.map((forma) => (
+                    <SelectItem key={forma.id} value={forma.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        {getTipoIcon(forma.tipoPagamento)}
+                        <span>{getTipoLabel(forma.tipoPagamento)}</span>
+                        {forma.ultimosDigitos && (
+                          <span className="text-muted-foreground">•••• {forma.ultimosDigitos}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            size="lg" 
+            disabled={isLoading || formasPagamento.length === 0}
+          >
             {isLoading ? "Solicitando..." : "Solicitar Corrida"}
           </Button>
         </form>

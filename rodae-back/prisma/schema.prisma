@@ -48,6 +48,7 @@ enum UsuarioStatus {
 model Passageiro {
   id          Int       @id
   usuario     Usuario   @relation(fields: [id], references: [id], onDelete: Cascade)
+  metodosPagamento MetodoPagamento[]
 }
 
 // =====================
@@ -159,4 +160,34 @@ enum TipoNotificacao {
   CORRIDA_FINALIZADA
   PAGAMENTO_CONFIRMADO
   PROMOCAO
+}
+
+// =====================
+// Métodos de Pagamento do Passageiro
+// =====================
+model MetodoPagamento {
+  id              Int       @id @default(autoincrement())
+  passageiro      Passageiro @relation(fields: [passageiroId], references: [id], onDelete: Cascade)
+  passageiroId    Int
+  tipoPagamento   TipoPagamento
+  nomeCartao      String?   @db.VarChar(60)
+  numeroCartaoCriptografado String?
+  validadeCartao  String?   // Formato: MM/AA (ex: 12/25)
+  status          MetodoPagamentoStatus @default(ATIVO)
+  criadoEm        DateTime  @default(now())
+  atualizadoEm    DateTime  @updatedAt
+
+  @@index([passageiroId])
+}
+
+enum TipoPagamento {
+  CARTAO_CREDITO
+  PIX
+  CARTEIRA_APP
+}
+
+enum MetodoPagamentoStatus {
+  ATIVO
+  EXPIRADO
+  INATIVO
 }

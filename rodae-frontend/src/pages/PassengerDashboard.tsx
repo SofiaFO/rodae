@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, CreditCard, Star, MapPin } from "lucide-react";
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PassengerDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const navigate = useNavigate();
 
   const handleCorridaCriada = () => {
     // Força atualização da lista de corridas
@@ -67,7 +69,11 @@ const PassengerDashboard = () => {
                 <CardTitle className="text-lg">Formas de Pagamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/formas-pagamento')}
+                >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Gerenciar Pagamentos
                 </Button>

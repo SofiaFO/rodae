@@ -29,7 +29,7 @@ export const api = {
       }
 
       return data;
-    } catch (error: any) {
+    } catch (error) {
       if (error.message.includes('Failed to fetch')) {
         throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3000');
       }
@@ -80,7 +80,7 @@ export const api = {
       }
 
       return data;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error during register:', error);
       if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
         throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3000');
@@ -105,7 +105,7 @@ export const api = {
     return data;
   },
 
-  async updateProfile(token: string, userType: string, userId: number, userData: any) {
+  async updateProfile(token: string, userType: string, userId: number, userData) {
     let endpoint = '';
     let id = userId;
     
@@ -118,7 +118,7 @@ export const api = {
         },
       });
       const passageirosData = await passageirosResponse.json();
-      const passageiro = passageirosData.data.find((p: any) => p.usuario.id === userId);
+      const passageiro = passageirosData.data.find((p) => p.usuario.id === userId);
       if (passageiro) {
         id = passageiro.id;
       }
@@ -131,7 +131,7 @@ export const api = {
         },
       });
       const motoristasData = await motoristasResponse.json();
-      const motorista = motoristasData.data.find((m: any) => m.id === userId);
+      const motorista = motoristasData.data.find((m) => m.id === userId);
       if (motorista && motorista.motorista) {
         id = motorista.motorista.id;
       }
@@ -477,7 +477,7 @@ export const api = {
     return data;
   },
 
-  async updateCorrida(token: string, id: number, updateData: any) {
+  async updateCorrida(token: string, id: number, updateData: unknown) {
     const response = await fetch(`${API_URL}/corridas/${id}`, {
       method: 'PUT',
       headers: {
@@ -491,6 +491,121 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(data.message || 'Erro ao atualizar corrida');
+    }
+
+    return data;
+  },
+
+  // Formas de Pagamento
+  async createFormaPagamento(token: string, formaPagamentoData: {
+    tipoPagamento: 'CARTAO_CREDITO' | 'PIX' | 'CARTEIRA_DIGITAL';
+    nomeNoCartao?: string;
+    numeroCartao?: string;
+    validadeCartao?: string;
+    cvv?: string;
+  }) {
+    // Mapear tipos do frontend para o backend
+    const tipoBackend = formaPagamentoData.tipoPagamento === 'CARTEIRA_DIGITAL' 
+      ? 'CARTEIRA_APP' 
+      : formaPagamentoData.tipoPagamento;
+
+    const backendData = {
+      tipoPagamento: tipoBackend,
+      nomeCartao: formaPagamentoData.nomeNoCartao,
+      numeroCartao: formaPagamentoData.numeroCartao,
+      validadeCartao: formaPagamentoData.validadeCartao,
+      cvv: formaPagamentoData.cvv,
+    };
+
+    const response = await fetch(`${API_URL}/metodos-pagamento`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(backendData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cadastrar forma de pagamento');
+    }
+
+    return data;
+  },
+
+  async getFormasPagamento(token: string) {
+    const response = await fetch(`${API_URL}/metodos-pagamento`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar formas de pagamento');
+    }
+
+    return data;
+  },
+
+  async getFormaPagamentoById(token: string, id: number) {
+    const response = await fetch(`${API_URL}/metodos-pagamento/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar forma de pagamento');
+    }
+
+    return data;
+  },
+
+  async updateFormaPagamento(token: string, id: number, updateData: {
+    nomeNoCartao?: string;
+    validadeCartao?: string;
+  }) {
+    const backendData = {
+      nomeCartao: updateData.nomeNoCartao,
+      validadeCartao: updateData.validadeCartao,
+    };
+
+    const response = await fetch(`${API_URL}/metodos-pagamento/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(backendData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao atualizar forma de pagamento');
+    }
+
+    return data;
+  },
+
+  async deleteFormaPagamento(token: string, id: number) {
+    const response = await fetch(`${API_URL}/metodos-pagamento/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao excluir forma de pagamento');
     }
 
     return data;

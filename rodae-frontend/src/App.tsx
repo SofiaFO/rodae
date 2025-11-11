@@ -10,6 +10,7 @@ import PassengerDashboard from "./pages/PassengerDashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
+import FormasPagamento from "./pages/FormasPagamento";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedTypes={['PASSAGEIRO', 'MOTORISTA', 'ADMIN']}>
                 <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/formas-pagamento" 
+            element={
+              <ProtectedRoute allowedTypes={['PASSAGEIRO']}>
+                <FormasPagamento />
               </ProtectedRoute>
             } 
           />
