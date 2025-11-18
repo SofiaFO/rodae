@@ -610,4 +610,135 @@ export const api = {
 
     return data;
   },
+
+  // Avaliações
+  async createAvaliacao(token: string, avaliacaoData: {
+    corridaId: number;
+    nota: number;
+    comentario?: string;
+    usuarioParaId: number;
+  }) {
+    const response = await fetch(`${API_URL}/avaliacoes`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(avaliacaoData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cadastrar avaliação');
+    }
+
+    return data;
+  },
+
+  async getAvaliacoes(token: string, filters?: {
+    usuarioAvaliadoId?: number;
+    notaMinima?: number;
+    notaMaxima?: number;
+    dataInicio?: string;
+    dataFim?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.usuarioAvaliadoId) queryParams.append('usuarioAvaliadoId', filters.usuarioAvaliadoId.toString());
+    if (filters?.notaMinima) queryParams.append('notaMinima', filters.notaMinima.toString());
+    if (filters?.notaMaxima) queryParams.append('notaMaxima', filters.notaMaxima.toString());
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/avaliacoes?${queryParams.toString()}`
+      : `${API_URL}/avaliacoes`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliações');
+    }
+
+    return data;
+  },
+
+  async getAvaliacaoById(token: string, id: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliação');
+    }
+
+    return data;
+  },
+
+  async getAvaliacoesPorCorrida(token: string, corridaId: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/corrida/${corridaId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliações da corrida');
+    }
+
+    return data;
+  },
+
+  async updateAvaliacao(token: string, id: number, updateData: {
+    nota?: number;
+    comentario?: string;
+  }) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao editar avaliação');
+    }
+
+    return data;
+  },
+
+  async deleteAvaliacao(token: string, id: number, justificativa?: string) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ justificativa: justificativa || '' }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao excluir avaliação');
+    }
+
+    return data;
+  },
 };

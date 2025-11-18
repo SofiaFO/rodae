@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity } from "lucide-react";
+import { Users, Car, CheckCircle, XCircle, Eye, Trash2, Clock, Search, X, MapPin, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
 import ListaCorridas from "@/components/ListaCorridas";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 
 interface Motorista {
   id: number;
@@ -255,6 +256,10 @@ const AdminDashboard = () => {
               <MapPin className="w-4 h-4" />
               Corridas
             </TabsTrigger>
+            <TabsTrigger value="avaliacoes" className="gap-2">
+              <Star className="w-4 h-4" />
+              Avaliações
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pendentes">
@@ -441,20 +446,11 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="corridas">
-            <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="em_andamento">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Em Andamento
-                </TabsTrigger>
-                <TabsTrigger value="finalizadas">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finalizadas
-                </TabsTrigger>
-                <TabsTrigger value="canceladas">
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Canceladas
-                </TabsTrigger>
+            <Tabs defaultValue="em_andamento" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -470,7 +466,7 @@ const AdminDashboard = () => {
                   refresh={refreshCorridas}
                 />
               </TabsContent>
-              <TabsContent value="canceladas" className="mt-6">
+              <TabsContent value="canceladas">
                 <ListaCorridas 
                   filtroStatus="CANCELADA" 
                   titulo="Corridas Canceladas"
@@ -478,6 +474,10 @@ const AdminDashboard = () => {
                 />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="avaliacoes">
+            <MinhasAvaliacoes />
           </TabsContent>
         </Tabs>
 

@@ -6,6 +6,7 @@ import { DollarSign, Star, Clock, TrendingUp, MapPin, Navigation2 } from "lucide
 import Navbar from "@/components/Navbar";
 import ListaCorridas from "@/components/ListaCorridas";
 import CorridasDisponiveis from "@/components/CorridasDisponiveis";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import { useToast } from "@/hooks/use-toast";
 
 const DriverDashboard = () => {
@@ -138,6 +139,9 @@ const DriverDashboard = () => {
                     titulo="Corridas Canceladas"
                     refresh={refreshKey}
                   />
+                </TabsContent>
+                <TabsContent value="avaliacoes" className="mt-6">
+                  <MinhasAvaliacoes />
                 </TabsContent>
               </Tabs>
             )}

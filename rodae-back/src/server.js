@@ -8,6 +8,7 @@ const motoristaRoutes = require('./routes/motorista.routes');
 const corridaRoutes = require('./routes/corrida.routes');
 const adminRoutes = require('./routes/admin.routes');
 const metodoPagamentoRoutes = require('./routes/metodoPagamento.routes');
+const avaliacaoRoutes = require('./routes/avaliacao.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use('/api/motoristas', motoristaRoutes);
 app.use('/api/corridas', corridaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/metodos-pagamento', metodoPagamentoRoutes);
+app.use('/api/avaliacoes', avaliacaoRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
