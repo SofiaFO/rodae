@@ -610,4 +610,346 @@ export const api = {
 
     return data;
   },
+
+  // Avaliações
+  async createAvaliacao(token: string, avaliacaoData: {
+    corridaId: number;
+    nota: number;
+    comentario?: string;
+    usuarioParaId: number;
+  }) {
+    const response = await fetch(`${API_URL}/avaliacoes`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(avaliacaoData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cadastrar avaliação');
+    }
+
+    return data;
+  },
+
+  async getAvaliacoes(token: string, filters?: {
+    usuarioAvaliadoId?: number;
+    notaMinima?: number;
+    notaMaxima?: number;
+    dataInicio?: string;
+    dataFim?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.usuarioAvaliadoId) queryParams.append('usuarioAvaliadoId', filters.usuarioAvaliadoId.toString());
+    if (filters?.notaMinima) queryParams.append('notaMinima', filters.notaMinima.toString());
+    if (filters?.notaMaxima) queryParams.append('notaMaxima', filters.notaMaxima.toString());
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/avaliacoes?${queryParams.toString()}`
+      : `${API_URL}/avaliacoes`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliações');
+    }
+
+    return data;
+  },
+
+  async getAvaliacaoById(token: string, id: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliação');
+    }
+
+    return data;
+  },
+
+  async getAvaliacoesPorCorrida(token: string, corridaId: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/corrida/${corridaId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar avaliações da corrida');
+    }
+
+    return data;
+  },
+
+  async updateAvaliacao(token: string, id: number, updateData: {
+    nota?: number;
+    comentario?: string;
+  }) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao editar avaliação');
+    }
+
+    return data;
+  },
+
+  async deleteAvaliacao(token: string, id: number, justificativa?: string) {
+    const response = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ justificativa: justificativa || '' }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao excluir avaliação');
+    }
+
+    return data;
+  },
+
+  async podeAvaliarCorrida(token: string, corridaId: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/pode-avaliar/${corridaId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao verificar se pode avaliar');
+    }
+
+    return data;
+  },
+
+  // Admin - Dashboard e Relatórios
+  async getDashboardAdmin(token: string) {
+    const response = await fetch(`${API_URL}/admin/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao carregar dashboard');
+    }
+
+    return data;
+  },
+
+  async updateUsuarioStatus(token: string, id: number, status: string, justificativa: string) {
+    const response = await fetch(`${API_URL}/admin/usuarios/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status, justificativa }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao atualizar status do usuário');
+    }
+
+    return data;
+  },
+
+  async cancelarCorridaAdmin(token: string, id: number, justificativa: string) {
+    const response = await fetch(`${API_URL}/admin/corridas/${id}/cancelar`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ justificativa }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cancelar corrida');
+    }
+
+    return data;
+  },
+
+  async getHistoricoUsuario(token: string, id: number) {
+    const response = await fetch(`${API_URL}/admin/usuarios/${id}/historico`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar histórico do usuário');
+    }
+
+    return data;
+  },
+
+  async getRelatoriosCorridas(token: string, filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusCorrida?: string;
+    statusPagamento?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusCorrida) queryParams.append('statusCorrida', filters.statusCorrida);
+    if (filters?.statusPagamento) queryParams.append('statusPagamento', filters.statusPagamento);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/corridas?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/corridas`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao gerar relatório de corridas');
+    }
+
+    return data;
+  },
+
+  async exportarRelatoriosCorridas(token: string, formato: 'csv' | 'excel' | 'pdf', filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusCorrida?: string;
+    statusPagamento?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusCorrida) queryParams.append('statusCorrida', filters.statusCorrida);
+    if (filters?.statusPagamento) queryParams.append('statusPagamento', filters.statusPagamento);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/corridas/export/${formato}?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/corridas/export/${formato}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao exportar relatório');
+    }
+
+    return response.blob();
+  },
+
+  async getRelatoriosMotoristas(token: string, filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusMotorista?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusMotorista) queryParams.append('statusMotorista', filters.statusMotorista);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/motoristas?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/motoristas`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao gerar relatório de motoristas');
+    }
+
+    return data;
+  },
+
+  async exportarRelatoriosMotoristas(token: string, formato: 'csv' | 'excel' | 'pdf', filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusMotorista?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusMotorista) queryParams.append('statusMotorista', filters.statusMotorista);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/motoristas/export/${formato}?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/motoristas/export/${formato}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao exportar relatório');
+    }
+
+    return response.blob();
+  },
 };

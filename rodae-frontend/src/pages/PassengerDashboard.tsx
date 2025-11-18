@@ -6,6 +6,7 @@ import { Clock, CreditCard, Star, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import SolicitarCorrida from "@/components/SolicitarCorrida";
 import ListaCorridas from "@/components/ListaCorridas";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PassengerDashboard = () => {
@@ -84,10 +85,11 @@ const PassengerDashboard = () => {
           {/* Minhas Corridas */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                 <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                 <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
+                <TabsTrigger value="avaliacoes">Minhas Avaliações</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -109,6 +111,9 @@ const PassengerDashboard = () => {
                   titulo="Corridas Canceladas"
                   refresh={refreshKey}
                 />
+              </TabsContent>
+              <TabsContent value="avaliacoes" className="mt-6">
+                <MinhasAvaliacoes />
               </TabsContent>
             </Tabs>
           </div>

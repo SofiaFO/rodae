@@ -5,12 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity } from "lucide-react";
+import { Users, Car, CheckCircle, XCircle, Eye, Trash2, Clock, MapPin, BarChart3, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
+import DashboardResumo from "@/components/DashboardResumo";
 import ListaCorridas from "@/components/ListaCorridas";
+import RelatoriosCorridas from "@/components/RelatoriosCorridas";
+import RelatoriosMotoristas from "@/components/RelatoriosMotoristas";
 
 interface Motorista {
   id: number;
@@ -237,8 +240,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs para Motoristas e Corridas */}
-        <Tabs defaultValue="pendentes" className="space-y-4">
+        <Tabs defaultValue="dashboard" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="dashboard" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="pendentes" className="gap-2">
               <Clock className="w-4 h-4" />
               Pendentes ({motoristasPendentes.length})
@@ -255,7 +262,19 @@ const AdminDashboard = () => {
               <MapPin className="w-4 h-4" />
               Corridas
             </TabsTrigger>
+            <TabsTrigger value="relatorios-corridas" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Relatórios Corridas
+            </TabsTrigger>
+            <TabsTrigger value="relatorios-motoristas" className="gap-2">
+              <Car className="w-4 h-4" />
+              Relatórios Motoristas
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <DashboardResumo />
+          </TabsContent>
 
           <TabsContent value="pendentes">
             <Card>
@@ -441,20 +460,11 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="corridas">
-            <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="em_andamento">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Em Andamento
-                </TabsTrigger>
-                <TabsTrigger value="finalizadas">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finalizadas
-                </TabsTrigger>
-                <TabsTrigger value="canceladas">
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Canceladas
-                </TabsTrigger>
+            <Tabs defaultValue="em_andamento" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -470,7 +480,7 @@ const AdminDashboard = () => {
                   refresh={refreshCorridas}
                 />
               </TabsContent>
-              <TabsContent value="canceladas" className="mt-6">
+              <TabsContent value="canceladas">
                 <ListaCorridas 
                   filtroStatus="CANCELADA" 
                   titulo="Corridas Canceladas"
@@ -478,6 +488,14 @@ const AdminDashboard = () => {
                 />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="relatorios-corridas">
+            <RelatoriosCorridas />
+          </TabsContent>
+
+          <TabsContent value="relatorios-motoristas">
+            <RelatoriosMotoristas />
           </TabsContent>
         </Tabs>
 

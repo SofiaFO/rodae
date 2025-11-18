@@ -6,11 +6,13 @@ import { DollarSign, Star, Clock, TrendingUp, MapPin, Navigation2 } from "lucide
 import Navbar from "@/components/Navbar";
 import ListaCorridas from "@/components/ListaCorridas";
 import CorridasDisponiveis from "@/components/CorridasDisponiveis";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import { useToast } from "@/hooks/use-toast";
 
 const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState("em_andamento");
   const { toast } = useToast();
 
   const handleToggleOnline = () => {
@@ -112,7 +114,7 @@ const DriverDashboard = () => {
             {isOnline ? (
               <CorridasDisponiveis />
             ) : (
-              <Tabs defaultValue="em_andamento" className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                   <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
@@ -139,6 +141,9 @@ const DriverDashboard = () => {
                     refresh={refreshKey}
                   />
                 </TabsContent>
+                <TabsContent value="avaliacoes" className="mt-6">
+                  <MinhasAvaliacoes />
+                </TabsContent>
               </Tabs>
             )}
           </div>
@@ -158,7 +163,11 @@ const DriverDashboard = () => {
                   <DollarSign className="w-4 h-4 mr-2" />
                   Histórico de Ganhos
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setActiveTab("avaliacoes")}
+                >
                   <Star className="w-4 h-4 mr-2" />
                   Minhas Avaliações
                 </Button>
