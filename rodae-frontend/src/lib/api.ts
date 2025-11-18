@@ -741,4 +741,215 @@ export const api = {
 
     return data;
   },
+
+  async podeAvaliarCorrida(token: string, corridaId: number) {
+    const response = await fetch(`${API_URL}/avaliacoes/pode-avaliar/${corridaId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao verificar se pode avaliar');
+    }
+
+    return data;
+  },
+
+  // Admin - Dashboard e Relatórios
+  async getDashboardAdmin(token: string) {
+    const response = await fetch(`${API_URL}/admin/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao carregar dashboard');
+    }
+
+    return data;
+  },
+
+  async updateUsuarioStatus(token: string, id: number, status: string, justificativa: string) {
+    const response = await fetch(`${API_URL}/admin/usuarios/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status, justificativa }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao atualizar status do usuário');
+    }
+
+    return data;
+  },
+
+  async cancelarCorridaAdmin(token: string, id: number, justificativa: string) {
+    const response = await fetch(`${API_URL}/admin/corridas/${id}/cancelar`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ justificativa }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cancelar corrida');
+    }
+
+    return data;
+  },
+
+  async getHistoricoUsuario(token: string, id: number) {
+    const response = await fetch(`${API_URL}/admin/usuarios/${id}/historico`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar histórico do usuário');
+    }
+
+    return data;
+  },
+
+  async getRelatoriosCorridas(token: string, filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusCorrida?: string;
+    statusPagamento?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusCorrida) queryParams.append('statusCorrida', filters.statusCorrida);
+    if (filters?.statusPagamento) queryParams.append('statusPagamento', filters.statusPagamento);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/corridas?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/corridas`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao gerar relatório de corridas');
+    }
+
+    return data;
+  },
+
+  async exportarRelatoriosCorridas(token: string, formato: 'csv' | 'excel' | 'pdf', filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusCorrida?: string;
+    statusPagamento?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusCorrida) queryParams.append('statusCorrida', filters.statusCorrida);
+    if (filters?.statusPagamento) queryParams.append('statusPagamento', filters.statusPagamento);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/corridas/export/${formato}?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/corridas/export/${formato}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao exportar relatório');
+    }
+
+    return response.blob();
+  },
+
+  async getRelatoriosMotoristas(token: string, filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusMotorista?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusMotorista) queryParams.append('statusMotorista', filters.statusMotorista);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/motoristas?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/motoristas`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao gerar relatório de motoristas');
+    }
+
+    return data;
+  },
+
+  async exportarRelatoriosMotoristas(token: string, formato: 'csv' | 'excel' | 'pdf', filters?: {
+    dataInicio?: string;
+    dataFim?: string;
+    statusMotorista?: string;
+    cidade?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (filters?.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+    if (filters?.dataFim) queryParams.append('dataFim', filters.dataFim);
+    if (filters?.statusMotorista) queryParams.append('statusMotorista', filters.statusMotorista);
+    if (filters?.cidade) queryParams.append('cidade', filters.cidade);
+
+    const url = queryParams.toString() 
+      ? `${API_URL}/admin/relatorios/motoristas/export/${formato}?${queryParams.toString()}`
+      : `${API_URL}/admin/relatorios/motoristas/export/${formato}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao exportar relatório');
+    }
+
+    return response.blob();
+  },
 };

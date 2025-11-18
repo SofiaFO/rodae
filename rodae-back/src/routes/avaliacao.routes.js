@@ -18,6 +18,9 @@ router.get('/', avaliacaoController.consultar);
 // GET /api/avaliacoes/minhas - Consultar avaliações recebidas pelo usuário logado
 router.get('/minhas', avaliacaoController.minhasAvaliacoes);
 
+// GET /api/avaliacoes/pode-avaliar/:corridaId - Verificar se pode avaliar uma corrida
+router.get('/pode-avaliar/:corridaId', avaliacaoController.podeAvaliar);
+
 // GET /api/avaliacoes/media/:usuarioId - Consultar média de avaliações
 router.get('/media/:usuarioId?', avaliacaoController.media);
 

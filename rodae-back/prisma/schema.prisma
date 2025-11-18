@@ -83,7 +83,7 @@ model Corrida {
   atualizadoEm  DateTime      @updatedAt
 
   pagamento     Pagamento?
-  avaliacao     Avaliacao?
+  avaliacoes    Avaliacao[]
 }
 
 enum FormaPagamento {
@@ -131,7 +131,7 @@ enum PagamentoStatus {
 model Avaliacao {
   id          Int       @id @default(autoincrement())
   corrida     Corrida   @relation(fields: [corridaId], references: [id])
-  corridaId   Int       @unique
+  corridaId   Int
   nota        Int
   comentario  String?   @db.VarChar(200)
   usuarioDe   Usuario   @relation("AvaliacoesFeitas", fields: [usuarioDeId], references: [id])
@@ -143,6 +143,8 @@ model Avaliacao {
   deletadoEm  DateTime?
   justificativaExclusao String?
   historicoEdicoes AvaliacaoHistorico[]
+
+  @@unique([corridaId, usuarioDeId])
 }
 
 model AvaliacaoHistorico {

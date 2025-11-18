@@ -148,6 +148,27 @@ class AvaliacaoController {
       });
     }
   }
+
+  // Verificar se pode avaliar uma corrida
+  async podeAvaliar(req, res) {
+    try {
+      const { corridaId } = req.params;
+      const resultado = await avaliacaoService.podeAvaliarCorrida(
+        parseInt(corridaId),
+        req.userId
+      );
+      
+      res.json({
+        message: 'Verificação realizada com sucesso',
+        data: resultado
+      });
+    } catch (error) {
+      res.status(400).json({
+        error: 'Erro ao verificar possibilidade de avaliação',
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = new AvaliacaoController();

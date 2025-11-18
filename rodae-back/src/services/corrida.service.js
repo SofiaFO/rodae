@@ -188,6 +188,12 @@ class CorridaService {
               }
             }
           }
+        },
+        avaliacoes: {
+          select: {
+            id: true,
+            usuarioDeId: true
+          }
         }
       },
       orderBy: {
@@ -195,7 +201,17 @@ class CorridaService {
       }
     });
 
-    return corridas;
+    // Adicionar informação se o usuário atual já avaliou cada corrida
+    const corridasComInfo = corridas.map(corrida => {
+      const jaAvaliou = corrida.avaliacoes.some(av => av.usuarioDeId === userId);
+      return {
+        ...corrida,
+        usuarioAtualJaAvaliou: jaAvaliou,
+        podeAvaliar: corrida.status === 'FINALIZADA' && !jaAvaliou
+      };
+    });
+
+    return corridasComInfo;
   }
 
   /**
@@ -229,7 +245,22 @@ class CorridaService {
           }
         },
         pagamento: true,
-        avaliacao: true
+        avaliacoes: {
+          include: {
+            usuarioDe: {
+              select: {
+                id: true,
+                nome: true
+              }
+            },
+            usuarioPara: {
+              select: {
+                id: true,
+                nome: true
+              }
+            }
+          }
+        }
       }
     });
 
@@ -246,7 +277,17 @@ class CorridaService {
       throw new Error('Acesso negado. Você só pode visualizar corridas que realizou');
     }
 
-    return corrida;
+    // Adicionar informação se o usuário atual já avaliou
+    const jaAvaliou = corrida.avaliacoes.some(av => av.usuarioDeId === userId);
+    
+    // Adicionar informações úteis para o front
+    const corridaComInfo = {
+      ...corrida,
+      usuarioAtualJaAvaliou: jaAvaliou,
+      podeAvaliar: corrida.status === 'FINALIZADA' && !jaAvaliou
+    };
+
+    return corridaComInfo;
   }
 
   /**

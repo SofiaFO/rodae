@@ -284,7 +284,7 @@ class AdminService {
   }
 
   // [RFS23] Relatório sobre Corridas
-  async gerarRelatorioCorrid as(filtros) {
+  async gerarRelatorioCorridas(filtros) {
     const { dataInicio, dataFim, statusCorrida, statusPagamento, cidade } = filtros;
 
     const where = {};
