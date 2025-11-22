@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import SolicitarCorrida from "@/components/SolicitarCorrida";
 import ListaCorridas from "@/components/ListaCorridas";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
+import EnderecosFavoritos from "@/components/EnderecosFavoritos";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PassengerDashboard = () => {
@@ -85,11 +86,12 @@ const PassengerDashboard = () => {
           {/* Minhas Corridas */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                 <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                 <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
-                <TabsTrigger value="avaliacoes">Minhas Avaliações</TabsTrigger>
+                <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+                <TabsTrigger value="enderecos">Endereços</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -114,6 +116,9 @@ const PassengerDashboard = () => {
               </TabsContent>
               <TabsContent value="avaliacoes" className="mt-6">
                 <MinhasAvaliacoes />
+              </TabsContent>
+              <TabsContent value="enderecos" className="mt-6">
+                <EnderecosFavoritos />
               </TabsContent>
             </Tabs>
           </div>

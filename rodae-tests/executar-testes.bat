@@ -3,7 +3,7 @@ chcp 65001 >nul
 color 0A
 echo.
 echo ========================================
-echo   🧪 TESTES SELENIUM - RODAÊ
+echo   🧪 TESTES SELENIUM - RODAE
 echo ========================================
 echo.
 
@@ -31,12 +31,12 @@ echo 1 - Executar TODOS os testes
 echo 2 - Teste de Admin
 echo 3 - Teste de Passageiro  
 echo 4 - Teste de Motorista
-echo 5 - Teste de Avaliações ⭐
+echo 5 - Teste de Avaliacoes
 echo 6 - Configurar ambiente
 echo 0 - Sair
 echo.
 
-set /p opcao="Digite o número da opção: "
+set /p opcao="Digite o numero da opcao: "
 
 if "%opcao%"=="1" (
     echo.

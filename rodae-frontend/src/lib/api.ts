@@ -952,4 +952,122 @@ export const api = {
 
     return response.blob();
   },
+
+  // Endereços Favoritos
+  async createEnderecoFavorito(token: string, enderecoData: {
+    nomeLocal: string;
+    endereco: string;
+    latitude?: number;
+    longitude?: number;
+  }) {
+    const response = await fetch(`${API_URL}/enderecos-favoritos`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(enderecoData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao cadastrar endereço favorito');
+    }
+
+    return data;
+  },
+
+  async getEnderecosFavoritos(token: string, nome?: string) {
+    const url = nome 
+      ? `${API_URL}/enderecos-favoritos?nome=${encodeURIComponent(nome)}`
+      : `${API_URL}/enderecos-favoritos`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar endereços favoritos');
+    }
+
+    return data;
+  },
+
+  async getEnderecoFavoritoById(token: string, id: number) {
+    const response = await fetch(`${API_URL}/enderecos-favoritos/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar endereço favorito');
+    }
+
+    return data;
+  },
+
+  async getEstatisticasEnderecosFavoritos(token: string) {
+    const response = await fetch(`${API_URL}/enderecos-favoritos/estatisticas`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao buscar estatísticas');
+    }
+
+    return data;
+  },
+
+  async updateEnderecoFavorito(token: string, id: number, updateData: {
+    nomeLocal?: string;
+    endereco?: string;
+    latitude?: number;
+    longitude?: number;
+  }) {
+    const response = await fetch(`${API_URL}/enderecos-favoritos/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao atualizar endereço favorito');
+    }
+
+    return data;
+  },
+
+  async deleteEnderecoFavorito(token: string, id: number) {
+    const response = await fetch(`${API_URL}/enderecos-favoritos/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Erro ao excluir endereço favorito');
+    }
+
+    return data;
+  },
 };

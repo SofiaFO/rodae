@@ -28,6 +28,7 @@ model Usuario {
   avaliacoesFeitas Avaliacao[] @relation("AvaliacoesFeitas")
   avaliacoesRecebidas Avaliacao[] @relation("AvaliacoesRecebidas")
   notificacoes   Notificacao[]
+  enderecosFavoritos EnderecoFavorito[]
 }
 
 enum UsuarioTipo {
@@ -207,4 +208,22 @@ enum MetodoPagamentoStatus {
   ATIVO
   EXPIRADO
   INATIVO
+}
+
+// =====================
+// Endereços Favoritos
+// =====================
+model EnderecoFavorito {
+  id          Int       @id @default(autoincrement())
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId   Int
+  nomeLocal   String    @db.VarChar(50)
+  endereco    String
+  latitude    Float?
+  longitude   Float?
+  criadoEm    DateTime  @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([usuarioId, nomeLocal])
+  @@index([usuarioId])
 }
