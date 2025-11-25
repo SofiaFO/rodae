@@ -317,6 +317,64 @@ class AvaliacaoService {
       totalAvaliacoes: result._count.id
     };
   }
+
+  // Verificar se o usuário pode avaliar uma corrida
+  async podeAvaliarCorrida(corridaId, usuarioId) {
+    // Verificar se a corrida existe
+    const corrida = await prisma.corrida.findUnique({
+      where: { id: corridaId },
+      include: {
+        avaliacoes: {
+          where: {
+            usuarioDeId: usuarioId
+          }
+        }
+      }
+    });
+
+    if (!corrida) {
+      return {
+        pode: false,
+        motivo: 'Corrida não encontrada'
+      };
+    }
+
+    // Verificar se está finalizada
+    if (corrida.status !== 'FINALIZADA') {
+      return {
+        pode: false,
+        motivo: 'A corrida precisa estar finalizada para ser avaliada'
+      };
+    }
+
+    // Verificar se o usuário participou da corrida
+    const participou = corrida.passageiroId === usuarioId || corrida.motoristaId === usuarioId;
+    if (!participou) {
+      return {
+        pode: false,
+        motivo: 'Você não participou desta corrida'
+      };
+    }
+
+    // Verificar se já avaliou
+    if (corrida.avaliacoes.length > 0) {
+      return {
+        pode: false,
+        motivo: 'Você já avaliou esta corrida'
+      };
+    }
+
+    // Determinar quem deve ser avaliado
+    const usuarioParaAvaliar = corrida.passageiroId === usuarioId 
+      ? corrida.motoristaId 
+      : corrida.passageiroId;
+
+    return {
+      pode: true,
+      corridaId: corrida.id,
+      usuarioParaId: usuarioParaAvaliar
+    };
+  }
 }
 
 module.exports = new AvaliacaoService();

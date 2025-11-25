@@ -1,4 +1,5 @@
 const adminService = require('../services/admin.service');
+const exportService = require('../services/export.service');
 
 class AdminController {
   // Listar motoristas (com filtro opcional de status)
@@ -199,6 +200,120 @@ class AdminController {
     } catch (error) {
       res.status(500).json({
         error: 'Erro ao gerar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS23] Exportar Relatório de Corridas em CSV
+  async exportarRelatorioCorridasCSV(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioCorridas(filtros);
+      
+      const csv = exportService.exportarRelatorioCorridasCSV(relatorio);
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-corridas-${Date.now()}.csv`);
+      res.send(csv);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS23] Exportar Relatório de Corridas em Excel
+  async exportarRelatorioCorridasExcel(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioCorridas(filtros);
+      
+      const buffer = await exportService.gerarExcelCorridas(relatorio);
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-corridas-${Date.now()}.xlsx`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS23] Exportar Relatório de Corridas em PDF
+  async exportarRelatorioCorridasPDF(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioCorridas(filtros);
+      
+      const buffer = await exportService.gerarPDFCorridas(relatorio);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-corridas-${Date.now()}.pdf`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS24] Exportar Relatório de Motoristas em CSV
+  async exportarRelatorioMotoristasCSV(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioMotoristas(filtros);
+      
+      const csv = exportService.exportarRelatorioMotoristasCSV(relatorio);
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-motoristas-${Date.now()}.csv`);
+      res.send(csv);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS24] Exportar Relatório de Motoristas em Excel
+  async exportarRelatorioMotoristasExcel(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioMotoristas(filtros);
+      
+      const buffer = await exportService.gerarExcelMotoristas(relatorio);
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-motoristas-${Date.now()}.xlsx`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
+        message: error.message
+      });
+    }
+  }
+
+  // [RFS24] Exportar Relatório de Motoristas em PDF
+  async exportarRelatorioMotoristasPDF(req, res) {
+    try {
+      const filtros = req.query;
+      const relatorio = await adminService.gerarRelatorioMotoristas(filtros);
+      
+      const buffer = await exportService.gerarPDFMotoristas(relatorio);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=relatorio-motoristas-${Date.now()}.pdf`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Erro ao exportar relatório',
         message: error.message
       });
     }
