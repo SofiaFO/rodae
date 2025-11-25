@@ -28,17 +28,35 @@ class MetodoPagamentoService {
   decrypt(text) {
     if (!text) return null;
     
-    const parts = text.split(':');
-    const iv = Buffer.from(parts[0], 'hex');
-    const encryptedText = parts[1];
-    
-    const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
-    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-    
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    
-    return decrypted;
+    try {
+      const parts = text.split(':');
+      
+      // Validar formato
+      if (parts.length !== 2) {
+        console.warn('Formato de criptografia inválido. Dados podem estar corrompidos.');
+        return null;
+      }
+      
+      const iv = Buffer.from(parts[0], 'hex');
+      const encryptedText = parts[1];
+      
+      // Validar tamanho do IV
+      if (iv.length !== 16) {
+        console.warn('IV inválido. Tamanho esperado: 16 bytes.');
+        return null;
+      }
+      
+      const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+      const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+      
+      let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      
+      return decrypted;
+    } catch (error) {
+      console.error('Erro ao descriptografar:', error.message);
+      return null;
+    }
   }
 
   /**
@@ -222,14 +240,27 @@ class MetodoPagamentoService {
       };
 
       if (metodo.tipoPagamento === 'CARTAO_CREDITO') {
-        const numeroCompleto = this.decrypt(metodo.numeroCartaoCriptografado);
-        metodoSeguro.ultimos4Digitos = `**** **** **** ${numeroCompleto.slice(-4)}`;
-        metodoSeguro.nomeCartao = metodo.nomeCartao;
-        metodoSeguro.validadeCartao = metodo.validadeCartao;
-        
-        // Verificar se está expirado
-        if (this.verificarExpiracao(metodo.validadeCartao)) {
-          metodoSeguro.status = 'EXPIRADO';
+        try {
+          const numeroCompleto = this.decrypt(metodo.numeroCartaoCriptografado);
+          
+          if (numeroCompleto) {
+            metodoSeguro.ultimos4Digitos = `**** **** **** ${numeroCompleto.slice(-4)}`;
+          } else {
+            metodoSeguro.ultimos4Digitos = '**** **** **** ****';
+            metodoSeguro.erro = 'Dados corrompidos';
+          }
+          
+          metodoSeguro.nomeCartao = metodo.nomeCartao;
+          metodoSeguro.validadeCartao = metodo.validadeCartao;
+          
+          // Verificar se está expirado
+          if (metodo.validadeCartao && this.verificarExpiracao(metodo.validadeCartao)) {
+            metodoSeguro.status = 'EXPIRADO';
+          }
+        } catch (error) {
+          console.error('Erro ao processar método de pagamento:', error.message);
+          metodoSeguro.ultimos4Digitos = '**** **** **** ****';
+          metodoSeguro.erro = 'Erro ao descriptografar';
         }
       }
 

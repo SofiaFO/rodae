@@ -15,6 +15,7 @@ import { useAuthStore } from "@/store/authStore";
 const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState("em_andamento");
   const { toast } = useToast();
   const { token } = useAuthStore();
   const [stats, setStats] = useState<any>(null);
@@ -200,7 +201,11 @@ const DriverDashboard = () => {
                   <DollarSign className="w-4 h-4 mr-2" />
                   Histórico de Ganhos
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setActiveTab("avaliacoes")}
+                >
                   <Star className="w-4 h-4 mr-2" />
                   Minhas Avaliações
                 </Button>

@@ -273,12 +273,12 @@ const MinhasAvaliacoes = () => {
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nota-min">Nota Mínima</Label>
-              <Select value={notaMinima} onValueChange={setNotaMinima}>
+              <Select value={notaMinima || 'all'} onValueChange={(value) => setNotaMinima(value === 'all' ? '' : value)}>
                 <SelectTrigger id="nota-min">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="1">1★</SelectItem>
                   <SelectItem value="2">2★</SelectItem>
                   <SelectItem value="3">3★</SelectItem>
@@ -290,12 +290,12 @@ const MinhasAvaliacoes = () => {
 
             <div className="space-y-2">
               <Label htmlFor="nota-max">Nota Máxima</Label>
-              <Select value={notaMaxima} onValueChange={setNotaMaxima}>
+              <Select value={notaMaxima || 'all'} onValueChange={(value) => setNotaMaxima(value === 'all' ? '' : value)}>
                 <SelectTrigger id="nota-max">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="1">1★</SelectItem>
                   <SelectItem value="2">2★</SelectItem>
                   <SelectItem value="3">3★</SelectItem>

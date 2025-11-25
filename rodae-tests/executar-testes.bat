@@ -3,7 +3,7 @@ chcp 65001 >nul
 color 0A
 echo.
 echo ========================================
-echo   🧪 TESTES SELENIUM - RODAÊ
+echo   🧪 TESTES SELENIUM - RODAE
 echo ========================================
 echo.
 
@@ -37,7 +37,7 @@ echo 7 - Configurar ambiente
 echo 0 - Sair
 echo.
 
-set /p opcao="Digite o número da opção: "
+set /p opcao="Digite o numero da opcao: "
 
 if "%opcao%"=="1" (
     echo.

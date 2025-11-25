@@ -35,6 +35,19 @@ interface Corrida {
       modeloCorVeiculo: string;
     };
   };
+  avaliacoes?: Array<{
+    id: number;
+    nota: number;
+    comentario?: string;
+    usuarioDeId: number;
+    usuarioParaId: number;
+    usuarioPara?: {
+      id: number;
+      nome: string;
+    };
+  }>;
+  usuarioAtualJaAvaliou?: boolean;
+  podeAvaliar?: boolean;
 }
 
 interface ListaCorridasProps {
@@ -272,7 +285,7 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
                       </Button>
                     </>
                   )}
-                  {corrida.status === 'FINALIZADA' && (
+                  {corrida.podeAvaliar && user?.tipo !== 'ADMIN' ? (
                     <Button
                       size="sm"
                       variant="default"
@@ -284,7 +297,16 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
                       <Star className="w-4 h-4 mr-1" />
                       Avaliar
                     </Button>
-                  )}
+                  ) : corrida.usuarioAtualJaAvaliou && corrida.status === 'FINALIZADA' && user?.tipo !== 'ADMIN' ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled
+                    >
+                      <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                      Avaliado
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -391,6 +413,45 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
                 <h4 className="font-semibold text-sm text-muted-foreground mb-1">Data/Hora da Solicitação</h4>
                 <p className="text-base">{new Date(corridaSelecionada.criadoEm).toLocaleString('pt-BR')}</p>
               </div>
+
+              {/* Seção de Avaliações */}
+              {corridaSelecionada.avaliacoes && corridaSelecionada.avaliacoes.length > 0 && (
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-lg mb-3">Avaliações</h3>
+                  <div className="space-y-3">
+                    {corridaSelecionada.avaliacoes.map((avaliacao) => (
+                      <div key={avaliacao.id} className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {avaliacao.usuarioPara?.nome || 'Usuário'}
+                            </span>
+                            {avaliacao.usuarioDeId === user?.id && (
+                              <Badge variant="secondary" className="text-xs">Sua avaliação</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < avaliacao.nota
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {avaliacao.comentario && (
+                          <p className="text-sm text-muted-foreground">{avaliacao.comentario}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
@@ -404,6 +465,19 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
               >
                 <XCircle className="w-4 h-4 mr-2" />
                 Cancelar Corrida
+              </Button>
+            )}
+            {corridaSelecionada?.podeAvaliar && user?.tipo !== 'ADMIN' && (
+              <Button
+                variant="default"
+                onClick={() => {
+                  setShowDetalhes(false);
+                  setCorridaAvaliar(corridaSelecionada);
+                  setShowAvaliacao(true);
+                }}
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Avaliar
               </Button>
             )}
             <Button variant="outline" onClick={() => setShowDetalhes(false)}>

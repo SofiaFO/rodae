@@ -42,15 +42,19 @@ npm test
 
 ## 🔑 Credenciais de Teste
 
+> **💡 Execute o seed do banco primeiro!** 
+> No terminal do `rodae-back`, execute: `npm run seed`
+> Isso criará automaticamente todos os usuários abaixo no banco de dados.
+
 ### Para Login nos Testes:
 
 - **Admin:** `admin@rodae.com` / `admin123`
 - **Passageiro:** `ana.silva@email.com` / `123456`
 - **Motorista:** `joao@gmail.com` / `senha` ⚠️ (Pré-aprovado!)
 
-> 💡 **Importante:** Motoristas recém-cadastrados não podem logar até serem aprovados pelo admin. Use o motorista pré-aprovado nos testes!
+> ⚠️ **Importante:** Motoristas recém-cadastrados não podem logar até serem aprovados pelo admin. Use o motorista pré-aprovado nos testes!
 
-📖 Veja mais detalhes em: **`CREDENCIAIS.md`**
+📖 Veja mais detalhes em: **`COMO_POPULAR_BANCO.md`** (na pasta rodae-back)
 
 ## 📋 Pré-requisitos
 

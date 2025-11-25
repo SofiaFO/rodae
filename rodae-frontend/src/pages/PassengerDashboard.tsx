@@ -106,7 +106,7 @@ const PassengerDashboard = () => {
           {/* Minhas Corridas */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                 <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                 <TabsTrigger value="canceladas">Canceladas</TabsTrigger>

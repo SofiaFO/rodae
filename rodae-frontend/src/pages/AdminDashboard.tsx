@@ -14,6 +14,8 @@ import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
 import DashboardResumo from "@/components/DashboardResumo";
 import ListaCorridas from "@/components/ListaCorridas";
+import RelatoriosCorridas from "@/components/RelatoriosCorridas";
+import RelatoriosMotoristas from "@/components/RelatoriosMotoristas";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import RelatoriosCorridasDetalhado from "@/components/RelatoriosCorridasDetalhado";
 import RelatoriosMotoristasDetalhado from "@/components/RelatoriosMotoristasDetalhado";
