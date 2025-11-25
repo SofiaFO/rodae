@@ -24,7 +24,7 @@ async function testarSistemaPagamentos() {
   try {
     // 1. LOGIN
     console.log('1️⃣  Fazendo login...');
-    const passageiro = await login('ana.silva@email.com', '123456');
+    const passageiro = await login('julia.almeida@email.com', '123456');
     tokenPassageiro = passageiro.token;
     passageiroId = passageiro.usuario.id;
     console.log(`✅ Passageiro logado: ${passageiro.usuario.nome}`);

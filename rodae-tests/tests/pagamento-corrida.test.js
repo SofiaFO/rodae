@@ -5,7 +5,7 @@
  * Pré-requisitos:
  * - Backend rodando na porta 3000
  * - Frontend rodando na porta 8080
- * - Passageiro: ana.silva@email.com / 123456
+ * - Passageiro: julia.almeida@email.com / 123456
  */
 
 const { By, until } = require('selenium-webdriver');
@@ -31,7 +31,7 @@ async function testePagamentoCorrida() {
     await TestHelper.sleep(500);
     const emailInput = await driver.wait(until.elementLocated(By.css('input[id="email-login"]')), WAIT_TIMEOUT);
     await emailInput.clear();
-    await emailInput.sendKeys('ana.silva@email.com');
+    await emailInput.sendKeys('julia.almeida@email.com');
     const senhaInput = await driver.findElement(By.css('input[id="password-login"]'));
     await senhaInput.clear();
     await senhaInput.sendKeys('123456');
@@ -114,7 +114,7 @@ async function testePagamentoCorrida() {
     );
     const senhaInputMotorista = await driver.findElement(By.css('input[id="password-login"]'));
     await emailInputMotorista.clear();
-    await emailInputMotorista.sendKeys('joao@email.com');
+    await emailInputMotorista.sendKeys('fernanda.lima@email.com');
     await senhaInputMotorista.clear();
     await senhaInputMotorista.sendKeys('123456');
     const btnLoginMotorista = await driver.findElement(By.css('button[type="submit"]'));
@@ -149,6 +149,7 @@ async function testePagamentoCorrida() {
 
     // Ficar OFFLINE para finalizar corrida
     console.log('   Ficando offline para finalizar corrida...'.cyan);
+    await TestHelper.sleep(1000);
     const btnOffline = await driver.wait(
       until.elementLocated(By.xpath("//button[contains(text(), 'Ficar Offline') or contains(text(), 'Offline')]")),
       WAIT_TIMEOUT
@@ -156,8 +157,18 @@ async function testePagamentoCorrida() {
     await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", btnOffline);
     await TestHelper.sleep(500);
     await driver.executeScript("arguments[0].click();", btnOffline);
-    await TestHelper.sleep(1500);
+    await TestHelper.sleep(2000);
     console.log('   ✅ Motorista offline'.green);
+
+    // Verificar se o card de "online/offline" mudou
+    try {
+      const statusText = await driver.findElement(By.xpath("//*[contains(text(), 'Você está offline')]"));
+      if (statusText) {
+        console.log('   ✅ Status confirmado: OFFLINE'.green);
+      }
+    } catch (e) {
+      console.log('   ⚠️  Status offline não confirmado visualmente'.yellow);
+    }
 
     // Navegar para aba "Em Andamento" para finalizar a corrida
     console.log('   Navegando para aba "Em Andamento"...'.cyan);
@@ -166,41 +177,45 @@ async function testePagamentoCorrida() {
       WAIT_TIMEOUT
     );
     await driver.executeScript("arguments[0].click();", tabEmAndamento);
-    await TestHelper.sleep(1500);
+    await TestHelper.sleep(2000);
     console.log('   ✅ Aba "Em Andamento" acessada'.green);
 
-    // Buscar todos os botões dentro da corrida em andamento
-    // O botão de finalizar é o segundo botão (primeiro é Ver detalhes)
+    // Buscar botão de finalizar (CheckCircle icon)
     console.log('   Buscando botão de finalizar corrida...'.cyan);
-    await TestHelper.sleep(1000);
+    await TestHelper.sleep(1500);
     
-    // Buscar pelo segundo botão após o botão com Eye (Ver detalhes)
-    const allButtons = await driver.findElements(By.css('button'));
+    // Buscar pelo texto "Finalizar"
     let btnFinalizar = null;
-    
-    // Encontrar botão que tem CheckCircle como filho
-    for (let btn of allButtons) {
-      try {
-        const svgs = await btn.findElements(By.css('svg'));
-        for (let svg of svgs) {
-          const className = await svg.getAttribute('class');
-          if (className && className.includes('lucide-check-circle')) {
-            btnFinalizar = btn;
-            break;
+    try {
+      btnFinalizar = await driver.wait(
+        until.elementLocated(By.xpath("//button[contains(text(), 'Finalizar')]")),
+        WAIT_TIMEOUT
+      );
+      console.log('   ✅ Botão "Finalizar" encontrado'.green);
+    } catch (e) {
+      console.log('   ❌ Botão "Finalizar" NÃO encontrado!'.red);
+      
+      // Debug: listar todos os botões visíveis
+      const allButtons = await driver.findElements(By.css('button'));
+      console.log(`   Debug: Total de ${allButtons.length} botões na página`.yellow);
+      
+      for (let i = 0; i < Math.min(15, allButtons.length); i++) {
+        try {
+          const texto = await allButtons[i].getText();
+          const display = await allButtons[i].isDisplayed();
+          if (display) {
+            console.log(`   Debug: Botão ${i}: "${texto}"`.gray);
           }
-        }
-        if (btnFinalizar) break;
-      } catch (e) {}
-    }
-    
-    if (!btnFinalizar) {
-      throw new Error('Botão de finalizar não encontrado');
+        } catch (e) {}
+      }
+      
+      throw new Error('Botão "Finalizar" não encontrado. Verifique se a corrida está EM_ANDAMENTO e o motorista logado é o correto.');
     }
     
     await driver.executeScript("arguments[0].scrollIntoView({block: 'center'});", btnFinalizar);
     await TestHelper.sleep(500);
     await driver.executeScript("arguments[0].click();", btnFinalizar);
-    await TestHelper.sleep(2000);
+    await TestHelper.sleep(3000);
     console.log('   ✅ Corrida finalizada pelo motorista'.green);
 
     // Verificar pagamento e repasse

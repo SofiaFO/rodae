@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 // Dados de exemplo
 const passageiros = [
-  { nome: 'Ana Silva', email: 'ana.silva@email.com', senha: '123456', telefone: '(11) 98765-4321' },
+  { nome: 'Ana Silva', email: 'julia.almeida@email.com', senha: '123456', telefone: '(11) 98765-4321' },
   { nome: 'Carlos Oliveira', email: 'carlos.oliveira@email.com', senha: '123456', telefone: '(11) 98765-4322' },
   { nome: 'Maria Santos', email: 'maria.santos@email.com', senha: '123456', telefone: '(11) 98765-4323' },
   { nome: 'Pedro Costa', email: 'pedro.costa@email.com', senha: '123456', telefone: '(11) 98765-4324' },

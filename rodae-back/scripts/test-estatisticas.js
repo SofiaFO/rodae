@@ -20,7 +20,7 @@ async function testarEstatisticas() {
   try {
     // 1. LOGIN PASSAGEIRO
     console.log('1️⃣  Fazendo login como passageiro...');
-    const passageiro = await login('ana.silva@email.com', '123456');
+    const passageiro = await login('julia.almeida@email.com', '123456');
     const tokenPassageiro = passageiro.token;
     console.log(`✅ Passageiro logado: ${passageiro.usuario.nome}\n`);
 

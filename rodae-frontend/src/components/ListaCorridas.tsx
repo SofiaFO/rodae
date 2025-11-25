@@ -269,7 +269,8 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
                           onClick={() => handleFinalizar(corrida)}
                           disabled={isLoading}
                         >
-                          <CheckCircle className="w-4 h-4" />
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Finalizar
                         </Button>
                       )}
                       <Button

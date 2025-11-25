@@ -91,7 +91,7 @@ async function testePassageiro() {
       const senhaInput = await driver.findElement(By.css('input[id="password-login"]'));
       
       await emailInput.clear();
-      await emailInput.sendKeys('ana.silva@email.com');
+      await emailInput.sendKeys('julia.almeida@email.com');
       await senhaInput.clear();
       await senhaInput.sendKeys('123456');
 

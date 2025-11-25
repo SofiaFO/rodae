@@ -6,7 +6,7 @@
  * - Backend rodando na porta 3000
  * - Frontend rodando na porta 8080
  * - Banco de dados populado (usar popular-banco.bat)
- * - Passageiro: ana.silva@email.com / 123456
+ * - Passageiro: julia.almeida@email.com / 123456
  */
 
 const { By, until } = require('selenium-webdriver');
@@ -46,7 +46,7 @@ async function testeEnderecos() {
       WAIT_TIMEOUT
     );
     await emailInput.clear();
-    await emailInput.sendKeys('ana.silva@email.com');
+    await emailInput.sendKeys('julia.almeida@email.com');
 
     const senhaInput = await driver.findElement(By.css('input[id="password-login"]'));
     await senhaInput.clear();
