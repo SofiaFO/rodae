@@ -33,7 +33,8 @@ echo 3 - Teste de Passageiro
 echo 4 - Teste de Motorista
 echo 5 - Teste de Avaliacoes
 echo 6 - Teste de Enderecos Favoritos
-echo 7 - Configurar ambiente
+echo 7 - Teste de Pagamento Corrida
+echo 8 - Configurar ambiente
 echo 0 - Sair
 echo.
 
@@ -70,6 +71,11 @@ if "%opcao%"=="1" (
     echo.
     node tests/enderecos.test.js
 ) else if "%opcao%"=="7" (
+    echo.
+    echo 💳 Executando teste de Pagamento Corrida...
+    echo.
+    node tests/pagamento-corrida.test.js
+) else if "%opcao%"=="8" (
     echo.
     echo ⚙️  Configurando ambiente...
     echo.

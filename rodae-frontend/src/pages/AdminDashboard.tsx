@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity, CreditCard } from "lucide-react";
+import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity, CreditCard, Star, FileText, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -19,7 +19,6 @@ import RelatoriosMotoristas from "@/components/RelatoriosMotoristas";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import RelatoriosCorridasDetalhado from "@/components/RelatoriosCorridasDetalhado";
 import RelatoriosMotoristasDetalhado from "@/components/RelatoriosMotoristasDetalhado";
-import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import AdminPagamentos from "@/pages/AdminPagamentos";
 
 interface Motorista {
@@ -310,6 +309,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="avaliacoes" className="gap-2">
               <Star className="w-4 h-4" />
               Avaliações
+            </TabsTrigger>
             <TabsTrigger value="pagamentos" className="gap-2">
               <CreditCard className="w-4 h-4" />
               Pagamentos
@@ -544,6 +544,8 @@ const AdminDashboard = () => {
 
           <TabsContent value="avaliacoes">
             <MinhasAvaliacoes />
+          </TabsContent>
+
           <TabsContent value="pagamentos">
             <AdminPagamentos />
           </TabsContent>

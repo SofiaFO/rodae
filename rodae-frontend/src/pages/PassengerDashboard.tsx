@@ -17,11 +17,15 @@ const PassengerDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { token } = useAuthStore();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    corridas?: { total: number };
+    avaliacoes?: { media: number };
+    financeiro?: { gastoTotal: number };
+  } | null>(null);
 
   useEffect(() => {
     loadEstatisticas();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadEstatisticas = async () => {
     try {
@@ -106,11 +110,6 @@ const PassengerDashboard = () => {
           {/* Minhas Corridas */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
-                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
-                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
-                <TabsTrigger value="avaliacoes">Minhas Avaliações</TabsTrigger>
               <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                 <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>

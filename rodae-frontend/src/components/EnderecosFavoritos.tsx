@@ -15,8 +15,8 @@ interface EnderecoFavorito {
   usuarioId: number;
   nomeLocal: string;
   endereco: string;
-  latitude?: number;
-  longitude?: number;
+  // latitude?: number;
+  // longitude?: number;
   criadoEm: string;
   atualizadoEm: string;
 }
@@ -38,8 +38,8 @@ const EnderecosFavoritos = () => {
   // Form
   const [nomeLocal, setNomeLocal] = useState("");
   const [endereco, setEndereco] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  // const [latitude, setLatitude] = useState("");
+  // const [longitude, setLongitude] = useState("");
 
   const loadEnderecos = async (busca?: string) => {
     try {
@@ -81,8 +81,6 @@ const EnderecosFavoritos = () => {
   const openCreateDialog = () => {
     setNomeLocal("");
     setEndereco("");
-    setLatitude("");
-    setLongitude("");
     setShowCreateDialog(true);
   };
 
@@ -90,8 +88,6 @@ const EnderecosFavoritos = () => {
     setSelectedEndereco(end);
     setNomeLocal(end.nomeLocal);
     setEndereco(end.endereco);
-    setLatitude(end.latitude?.toString() || "");
-    setLongitude(end.longitude?.toString() || "");
     setShowEditDialog(true);
   };
 
@@ -126,10 +122,7 @@ const EnderecosFavoritos = () => {
         endereco: endereco.trim(),
       };
 
-      if (latitude && longitude) {
-        data.latitude = parseFloat(latitude);
-        data.longitude = parseFloat(longitude);
-      }
+      // latitude e longitude removidos
 
       await api.createEnderecoFavorito(token!, data);
 
@@ -172,10 +165,7 @@ const EnderecosFavoritos = () => {
         endereco: endereco.trim(),
       };
 
-      if (latitude && longitude) {
-        data.latitude = parseFloat(latitude);
-        data.longitude = parseFloat(longitude);
-      }
+      // latitude e longitude removidos
 
       await api.updateEnderecoFavorito(token!, selectedEndereco.id, data);
 
@@ -373,29 +363,7 @@ const EnderecosFavoritos = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude (opcional)</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  placeholder="-23.5505"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude (opcional)</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  placeholder="-46.6333"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                />
-              </div>
+              {/* Campos de latitude e longitude removidos */}
             </div>
           </div>
 
@@ -443,27 +411,7 @@ const EnderecosFavoritos = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-latitude">Latitude</Label>
-                <Input
-                  id="edit-latitude"
-                  type="number"
-                  step="any"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-longitude">Longitude</Label>
-                <Input
-                  id="edit-longitude"
-                  type="number"
-                  step="any"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                />
-              </div>
+              {/* Campos de latitude e longitude removidos */}
             </div>
           </div>
 

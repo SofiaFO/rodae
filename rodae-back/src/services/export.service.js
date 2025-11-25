@@ -3,6 +3,40 @@ const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
 class ExportService {
+  // Função para formatar endereços longos
+  formatarEndereco(endereco) {
+    if (!endereco) return '';
+    
+    // Split por vírgula e remove espaços
+    const partes = endereco.split(',').map(p => p.trim());
+    
+    // Se tem menos de 3 partes, retorna como está
+    if (partes.length <= 2) return endereco;
+    
+    // Palavras-chave para filtrar
+    const palavrasRemover = [
+      'região', 'metropolitana', 'imediata', 'intermediária',
+      'geográfica', 'sudeste', 'sul', 'norte', 'nordeste', 'centro-oeste',
+      'brasil', 'brazil'
+    ];
+    
+    // Filtra partes relevantes
+    const partesRelevantes = partes.filter(parte => {
+      const parteLower = parte.toLowerCase();
+      return !palavrasRemover.some(palavra => parteLower.includes(palavra));
+    });
+    
+    // Pega no máximo as 3 primeiras partes relevantes
+    const resultado = partesRelevantes.slice(0, 3).join(', ');
+    
+    // Se ficou muito longo ainda, pega apenas as 2 primeiras
+    if (resultado.length > 60) {
+      return partesRelevantes.slice(0, 2).join(', ');
+    }
+    
+    return resultado || endereco;
+  }
+
   // Exportar para CSV
   exportarCSV(dados, campos) {
     try {
@@ -16,6 +50,13 @@ class ExportService {
 
   // Exportar Relatório de Corridas para CSV
   exportarRelatorioCorridasCSV(relatorio) {
+    // Formatar os dados antes de exportar
+    const corridasFormatadas = relatorio.corridas.map(corrida => ({
+      ...corrida,
+      origem: this.formatarEndereco(corrida.origem),
+      destino: this.formatarEndereco(corrida.destino)
+    }));
+
     const campos = [
       { label: 'ID', value: 'id' },
       { label: 'Passageiro', value: 'passageiro.nome' },
@@ -30,7 +71,7 @@ class ExportService {
       { label: 'Data', value: 'criadoEm' }
     ];
 
-    return this.exportarCSV(relatorio.corridas, campos);
+    return this.exportarCSV(corridasFormatadas, campos);
   }
 
   // Exportar Relatório de Motoristas para CSV
@@ -115,6 +156,13 @@ class ExportService {
 
   // Exportar Relatório de Corridas para Excel
   exportarRelatorioCorridasExcel(relatorio) {
+    // Formatar os dados antes de exportar
+    const corridasFormatadas = relatorio.corridas.map(corrida => ({
+      ...corrida,
+      origem: this.formatarEndereco(corrida.origem),
+      destino: this.formatarEndereco(corrida.destino)
+    }));
+
     const colunas = [
       { label: 'ID', value: 'id' },
       { label: 'Passageiro', value: 'passageiro.nome' },
@@ -129,7 +177,7 @@ class ExportService {
       { label: 'Data', value: 'criadoEm' }
     ];
 
-    return this.exportarExcel(relatorio.corridas, 'Relatório de Corridas', colunas);
+    return this.exportarExcel(corridasFormatadas, 'Relatório de Corridas', colunas);
   }
 
   // Exportar Relatório de Motoristas para Excel
@@ -252,9 +300,9 @@ class ExportService {
           doc.text(`Valor: R$ ${(corrida.pagamento?.valor || corrida.valorEstimado).toFixed(2)}`, 350, y);
           
           y += 12;
-          doc.text(`Origem: ${corrida.origem}`, 50, y);
+          doc.text(`Origem: ${this.formatarEndereco(corrida.origem)}`, 50, y);
           y += 12;
-          doc.text(`Destino: ${corrida.destino}`, 50, y);
+          doc.text(`Destino: ${this.formatarEndereco(corrida.destino)}`, 50, y);
           
           y += 12;
           doc.fontSize(8).fillColor('#999');
@@ -406,8 +454,8 @@ class ExportService {
         id: corrida.id,
         passageiro: corrida.passageiro?.nome || 'N/A',
         motorista: corrida.motorista?.nome || 'Aguardando',
-        origem: corrida.origem,
-        destino: corrida.destino,
+        origem: this.formatarEndereco(corrida.origem),
+        destino: this.formatarEndereco(corrida.destino),
         status: corrida.status,
         formaPagamento: corrida.formaPagamento,
         valorEstimado: corrida.valorEstimado,

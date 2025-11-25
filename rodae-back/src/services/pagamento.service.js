@@ -278,8 +278,12 @@ class PagamentoService {
     }
 
     // Calcular valores (80% motorista, 20% plataforma)
-    const valorMotorista = valorTotal * 0.80;
-    const valorPlataforma = valorTotal * 0.20;
+    const valorMotorista = parseFloat((valorTotal * 0.80).toFixed(2));
+    const valorPlataforma = parseFloat((valorTotal * 0.20).toFixed(2));
+
+    console.log(`[REPASSE] Calculando repasse de R$ ${valorTotal.toFixed(2)}:`);
+    console.log(`  - Motorista (80%): R$ ${valorMotorista.toFixed(2)}`);
+    console.log(`  - Plataforma (20%): R$ ${valorPlataforma.toFixed(2)}`);
 
     // Criar registro de repasse
     const repasse = await prisma.repasse.create({
@@ -443,6 +447,22 @@ class PagamentoService {
       }
     });
 
+    // Mapear repasses para formato esperado pelo frontend
+    const repassesFormatados = repasses.map(r => ({
+      id: r.id,
+      pagamentoId: r.pagamentoId,
+      motoristaId: r.motoristaId,
+      motoristaNome: r.motorista.nome,
+      valor: r.valorMotorista, // Valor que o motorista recebe
+      valorTotal: r.valorTotal, // Valor total do pagamento
+      valorPlataforma: r.valorPlataforma, // Comissão da plataforma
+      status: r.status,
+      dataHora: r.criadoEm,
+      dataRepasse: r.dataRepasse,
+      tentativas: r.tentativas,
+      ultimoErro: r.ultimoErro
+    }));
+
     // Calcular estatísticas
     const stats = {
       total: repasses.length,
@@ -459,7 +479,7 @@ class PagamentoService {
         .reduce((sum, r) => sum + r.valorPlataforma, 0)
     };
 
-    return { repasses, stats };
+    return { repasses: repassesFormatados, stats };
   }
 
   /**
