@@ -1,6 +1,91 @@
 const prisma = require('../config/database');
+const geocodingService = require('./geocoding.service');
+const rotaService = require('./rota.service');
+const pagamentoService = require('./pagamento.service');
 
 class CorridaService {
+  /**
+   * [RFS09] Solicitar Corrida com cálculo real de rota e valor
+   * Usa APIs gratuitas para geocodificação e cálculo de rota
+   */
+  async solicitarCorridaComRotaReal(passageiroId, data) {
+    const { origem, destino, formaPagamento, opcaoCorrida } = data;
+
+    // Validar passageiro
+    const passageiro = await prisma.usuario.findUnique({
+      where: { 
+        id: passageiroId,
+        tipo: 'PASSAGEIRO',
+        status: 'ATIVO'
+      }
+    });
+
+    if (!passageiro) {
+      throw new Error('Passageiro não encontrado ou inativo');
+    }
+
+    // Validações
+    if (!origem || !destino || !formaPagamento || !opcaoCorrida) {
+      throw new Error('Campos obrigatórios: origem, destino, formaPagamento, opcaoCorrida');
+    }
+
+    // 1. Geocodificar endereços (Nominatim)
+    console.log('[CORRIDA] Geocodificando endereços...');
+    const { origem: coordsOrigem, destino: coordsDestino } = await geocodingService.geocodeBatch(
+      origem,
+      destino
+    );
+
+    // 2. Calcular rota e valor (OSRM)
+    console.log('[CORRIDA] Calculando rota e valor...');
+    const { rota, valor } = await rotaService.calcularEstimativaCompleta(
+      coordsOrigem,
+      coordsDestino,
+      opcaoCorrida
+    );
+
+    // 3. Criar corrida no banco
+    const corrida = await prisma.corrida.create({
+      data: {
+        passageiroId,
+        origem: coordsOrigem.enderecoFormatado || origem,
+        destino: coordsDestino.enderecoFormatado || destino,
+        formaPagamento,
+        opcaoCorrida,
+        valorEstimado: valor.valorTotal,
+        status: 'EM_ANDAMENTO'
+      },
+      include: {
+        passageiro: {
+          select: {
+            id: true,
+            nome: true,
+            email: true,
+            telefone: true
+          }
+        }
+      }
+    });
+
+    // 4. Buscar motoristas próximos (raio de 5km)
+    // TODO: Implementar notificação para motoristas
+    // TODO: Implementar timeout de 8 minutos
+
+    return {
+      corrida,
+      detalhesRota: {
+        coordenadas: {
+          origem: coordsOrigem,
+          destino: coordsDestino
+        },
+        distancia: rota.distanciaKm,
+        duracao: rota.duracaoFormatada,
+        duracaoMinutos: rota.duracaoMinutos
+      },
+      detalhesValor: valor
+    };
+  }
+
   /**
    * [RFS05] Cadastrar Corrida (Solicitar Corrida)
    * Cria uma nova solicitação de corrida
@@ -514,6 +599,100 @@ class CorridaService {
     // TODO: Notificar passageiro que motorista aceitou
 
     return corridaAceita;
+  }
+
+  /**
+   * Finalizar corrida com processamento de pagamento
+   * Integra com sistema de pagamentos e processa repasse
+   */
+  async finalizarCorridaComPagamento(corridaId, motoristaId, dadosFinalizacao = {}) {
+    const corrida = await prisma.corrida.findUnique({
+      where: { id: corridaId },
+      include: {
+        passageiro: true,
+        motorista: true,
+        pagamento: true
+      }
+    });
+
+    if (!corrida) {
+      throw new Error('Corrida não encontrada');
+    }
+
+    if (corrida.motoristaId !== motoristaId) {
+      throw new Error('Apenas o motorista da corrida pode finalizá-la');
+    }
+
+    if (corrida.status === 'FINALIZADA') {
+      throw new Error('Corrida já foi finalizada');
+    }
+
+    if (corrida.status === 'CANCELADA') {
+      throw new Error('Não é possível finalizar uma corrida cancelada');
+    }
+
+    // 1. Calcular valor final (pode ser diferente do estimado)
+    const valorFinal = dadosFinalizacao.valorFinal || corrida.valorEstimado;
+
+    // 2. Finalizar corrida
+    const corridaFinalizada = await prisma.corrida.update({
+      where: { id: corridaId },
+      data: {
+        status: 'FINALIZADA',
+        valorFinal: valorFinal
+      }
+    });
+
+    // 3. Registrar pagamento (se ainda não existe)
+    let pagamento = corrida.pagamento;
+    if (!pagamento) {
+      console.log('[CORRIDA] Registrando pagamento...');
+      pagamento = await pagamentoService.registrarPagamento(corridaId, {
+        valor: valorFinal,
+        forma: corrida.formaPagamento
+      });
+    }
+
+    // 4. Buscar dados atualizados
+    const corridaCompleta = await prisma.corrida.findUnique({
+      where: { id: corridaId },
+      include: {
+        passageiro: {
+          select: {
+            id: true,
+            nome: true,
+            email: true
+          }
+        },
+        motorista: {
+          select: {
+            id: true,
+            nome: true,
+            email: true
+          }
+        },
+        pagamento: {
+          include: {
+            repasses: true
+          }
+        }
+      }
+    });
+
+    const repasse = corridaCompleta.pagamento?.repasses[0];
+
+    return {
+      corrida: corridaCompleta,
+      pagamento: {
+        id: corridaCompleta.pagamento?.id,
+        transacaoId: corridaCompleta.pagamento?.transacaoId,
+        valorTotal: valorFinal,
+        valorMotorista: repasse?.valorMotorista || 0,
+        valorPlataforma: repasse?.valorPlataforma || 0,
+        status: corridaCompleta.pagamento?.status || 'PENDENTE',
+        statusRepasse: repasse?.status || 'PENDENTE'
+      }
+    };
   }
 }
 

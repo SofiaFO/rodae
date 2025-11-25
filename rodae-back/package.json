@@ -7,25 +7,29 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node scripts/seed.js"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node scripts/seed.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "prisma": "^6.18.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "prisma": "^6.18.0"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
-    "express": "^4.21.1",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
-    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.1",
+    "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
-    "dotenv": "^16.4.7"
+    "pdfkit": "^0.17.2"
   }
 }

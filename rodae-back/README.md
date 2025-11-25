@@ -1,5 +1,22 @@
 # Rodaê Backend - API Documentation
 
+Sistema de transporte por aplicativo com recursos avançados de pagamento e cálculo real de rotas.
+
+## 🚀 Funcionalidades Principais
+
+- ✅ Autenticação JWT com múltiplos perfis (Passageiro, Motorista, Admin)
+- ✅ Sistema de corridas com estados (solicitação, aceitação, finalização)
+- ✅ **Cálculo real de rotas** usando APIs gratuitas (Nominatim + OSRM)
+- ✅ **Gateway de pagamento simulado** com repasse automático (80/20)
+- ✅ Sistema de avaliações com histórico de edições
+- ✅ Painel administrativo com dashboard e relatórios
+- ✅ Gerenciamento de métodos de pagamento (criptografados)
+- ✅ Endereços favoritos (máximo 10 por usuário)
+
+## 📚 Documentação Adicional
+
+- [Gateway de Pagamentos e Rotas](./GATEWAY_PAGAMENTOS.md) - Detalhes sobre geocoding, routing e pagamentos
+
 ## Configuração
 
 1. Instale as dependências:
@@ -18,11 +35,33 @@ PORT=3000
 3. Execute as migrações do Prisma:
 ```bash
 npx prisma migrate dev
+# ou (preserva dados existentes)
+npx prisma db push
 ```
 
 4. Inicie o servidor:
 ```bash
 npm run dev
+```
+
+## 🧪 Scripts de Teste
+
+### Criar Usuários de Teste
+```bash
+# Criar 1 admin
+node scripts/create-admin.js
+
+# Criar 10 passageiros
+node scripts/create-passageiros.js
+
+# Criar 10 motoristas
+node scripts/create-motoristas.js
+```
+
+### Testar Fluxo Completo de Corrida
+```bash
+# Testa geocoding + routing + pagamento
+node scripts/test-corrida-com-rota.js
 ```
 
 ## Endpoints
