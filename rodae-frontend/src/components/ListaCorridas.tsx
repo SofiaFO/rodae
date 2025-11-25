@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Calendar, DollarSign, User, Car, XCircle, Eye, CheckCircle, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { formatarEndereco } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import AvaliacaoDialog from "./AvaliacaoDialog";
 
@@ -53,9 +54,10 @@ interface ListaCorridasProps {
   filtroStatus?: 'EM_ANDAMENTO' | 'FINALIZADA' | 'CANCELADA';
   titulo?: string;
   refresh?: number;
+  onCorridaFinalizada?: () => void;
 }
 
-const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh }: ListaCorridasProps) => {
+const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCorridaFinalizada }: ListaCorridasProps) => {
   const { token, user } = useAuthStore();
   const { toast } = useToast();
   const [corridas, setCorridas] = useState<Corrida[]>([]);
@@ -118,14 +120,22 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh }: Li
   const handleFinalizar = async (corrida: Corrida) => {
     setIsLoading(true);
     try {
-      await api.updateCorrida(token!, corrida.id, { status: 'FINALIZADA' });
+      // Usa o endpoint correto que cria pagamento e repasse automaticamente
+      const response = await api.finalizarCorrida(token!, corrida.id, corrida.valorEstimado);
       
       toast({
         title: "Corrida finalizada",
-        description: "A corrida foi finalizada com sucesso.",
+        description: response.pagamento 
+          ? `Pagamento registrado: R$ ${response.pagamento.valorTotal.toFixed(2)} (Motorista recebe R$ ${response.pagamento.valorMotorista.toFixed(2)})`
+          : "A corrida foi finalizada com sucesso.",
       });
 
       loadCorridas();
+      
+      // Atualizar estatísticas do motorista
+      if (onCorridaFinalizada) {
+        onCorridaFinalizada();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -209,8 +219,10 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh }: Li
                     <MapPin className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold truncate">{corrida.origem} → {corrida.destino}</p>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="font-semibold line-clamp-1 flex-1" title={`${corrida.origem} → ${corrida.destino}`}>
+                        {formatarEndereco(corrida.origem)} → {formatarEndereco(corrida.destino)}
+                      </p>
                       {getStatusBadge(corrida.status)}
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -329,11 +341,17 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh }: Li
                 <div className="space-y-2">
                   <div>
                     <h4 className="font-semibold text-sm text-muted-foreground mb-1">Origem</h4>
-                    <p className="text-base">{corridaSelecionada.origem}</p>
+                    <p className="text-base">{formatarEndereco(corridaSelecionada.origem)}</p>
+                    <p className="text-xs text-muted-foreground mt-1" title={corridaSelecionada.origem}>
+                      {corridaSelecionada.origem}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm text-muted-foreground mb-1">Destino</h4>
-                    <p className="text-base">{corridaSelecionada.destino}</p>
+                    <p className="text-base">{formatarEndereco(corridaSelecionada.destino)}</p>
+                    <p className="text-xs text-muted-foreground mt-1" title={corridaSelecionada.destino}>
+                      {corridaSelecionada.destino}
+                    </p>
                   </div>
                 </div>
               </div>

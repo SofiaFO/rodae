@@ -28,6 +28,8 @@ model Usuario {
   avaliacoesFeitas Avaliacao[] @relation("AvaliacoesFeitas")
   avaliacoesRecebidas Avaliacao[] @relation("AvaliacoesRecebidas")
   notificacoes   Notificacao[]
+  enderecosFavoritos EnderecoFavorito[]
+  repasses Repasse[]
 }
 
 enum UsuarioTipo {
@@ -79,6 +81,7 @@ model Corrida {
   opcaoCorrida   OpcaoCorrida
   status        CorridaStatus @default(EM_ANDAMENTO)
   valorEstimado Float
+  valorFinal    Float?
   criadoEm      DateTime      @default(now())
   atualizadoEm  DateTime      @updatedAt
 
@@ -111,11 +114,15 @@ model Pagamento {
   id          Int         @id @default(autoincrement())
   corrida     Corrida     @relation(fields: [corridaId], references: [id])
   corridaId   Int         @unique
+  transacaoId String?     @unique
   valor       Float
   forma       FormaPagamento
   status      PagamentoStatus @default(PENDENTE)
+  justificativaReembolso String? @db.VarChar(500)
   criadoEm    DateTime    @default(now())
   atualizadoEm DateTime   @updatedAt
+  
+  repasses    Repasse[]
 }
 
 enum PagamentoStatus {
@@ -123,6 +130,34 @@ enum PagamentoStatus {
   PAGO
   FALHOU
   ESTORNADO
+}
+
+// =====================
+// Repasses ao Motorista
+// =====================
+model Repasse {
+  id          Int         @id @default(autoincrement())
+  pagamento   Pagamento   @relation(fields: [pagamentoId], references: [id])
+  pagamentoId Int
+  motorista   Usuario     @relation(fields: [motoristaId], references: [id])
+  motoristaId Int
+  valorTotal  Float       // Valor total da corrida
+  valorMotorista Float    // 80% do valor
+  valorPlataforma Float   // 20% do valor
+  status      RepasseStatus @default(PENDENTE)
+  dataRepasse DateTime?   // Quando foi efetivamente repassado
+  tentativas  Int         @default(0)
+  ultimoErro  String?     @db.VarChar(500)
+  criadoEm    DateTime    @default(now())
+  atualizadoEm DateTime   @updatedAt
+}
+
+enum RepasseStatus {
+  PENDENTE
+  PROCESSANDO
+  CONCLUIDO
+  FALHOU
+  CANCELADO
 }
 
 // =====================
@@ -207,4 +242,22 @@ enum MetodoPagamentoStatus {
   ATIVO
   EXPIRADO
   INATIVO
+}
+
+// =====================
+// Endereços Favoritos
+// =====================
+model EnderecoFavorito {
+  id          Int       @id @default(autoincrement())
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId   Int
+  nomeLocal   String    @db.VarChar(50)
+  endereco    String
+  latitude    Float?
+  longitude   Float?
+  criadoEm    DateTime  @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([usuarioId, nomeLocal])
+  @@index([usuarioId])
 }

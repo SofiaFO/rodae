@@ -31,7 +31,9 @@ echo 1 - Executar TODOS os testes
 echo 2 - Teste de Admin
 echo 3 - Teste de Passageiro  
 echo 4 - Teste de Motorista
-echo 5 - Configurar ambiente
+echo 5 - Teste de Avaliacoes
+echo 6 - Teste de Enderecos Favoritos
+echo 7 - Configurar ambiente
 echo 0 - Sair
 echo.
 
@@ -58,6 +60,16 @@ if "%opcao%"=="1" (
     echo.
     node tests/motorista-standalone.test.js
 ) else if "%opcao%"=="5" (
+    echo.
+    echo ⭐ Executando teste de Avaliações...
+    echo.
+    node tests/avaliacao.test.js
+) else if "%opcao%"=="6" (
+    echo.
+    echo 📍 Executando teste de Endereços Favoritos...
+    echo.
+    node tests/enderecos.test.js
+) else if "%opcao%"=="7" (
     echo.
     echo ⚙️  Configurando ambiente...
     echo.

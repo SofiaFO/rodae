@@ -9,6 +9,7 @@ import { FileDown, Search, FileText, FileSpreadsheet, File } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { formatarEndereco } from "@/lib/utils";
 
 interface RelatorioData {
   resumo: {
@@ -290,7 +291,9 @@ const RelatoriosCorridas = () => {
                         <TableCell>{corrida.passageiro?.nome || 'N/A'}</TableCell>
                         <TableCell>{corrida.motorista?.nome || 'Aguardando'}</TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {corrida.origem} → {corrida.destino}
+                          <span title={`${corrida.origem} → ${corrida.destino}`}>
+                            {formatarEndereco(corrida.origem)} → {formatarEndereco(corrida.destino)}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded text-xs ${

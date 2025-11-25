@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, DollarSign, Clock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { formatarEndereco } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 interface CorridaDisponivel {
@@ -150,16 +151,20 @@ const CorridasDisponiveis = () => {
                     <div className="space-y-2 mb-3">
                       <div className="flex items-start gap-2">
                         <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm text-muted-foreground">Origem</p>
-                          <p className="font-semibold">{corrida.origem}</p>
+                          <p className="font-semibold truncate" title={corrida.origem}>
+                            {formatarEndereco(corrida.origem)}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <MapPin className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm text-muted-foreground">Destino</p>
-                          <p className="font-semibold">{corrida.destino}</p>
+                          <p className="font-semibold truncate" title={corrida.destino}>
+                            {formatarEndereco(corrida.destino)}
+                          </p>
                         </div>
                       </div>
                     </div>

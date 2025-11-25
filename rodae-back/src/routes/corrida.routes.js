@@ -13,6 +13,13 @@ router.use(authMiddleware);
 router.post('/', isPassageiro, corridaController.create);
 
 /**
+ * Solicitar corrida com cálculo real de rota (Nominatim + OSRM)
+ * Versão aprimorada que usa APIs reais para geocoding e routing
+ * Apenas passageiros podem solicitar corridas
+ */
+router.post('/com-rota', isPassageiro, corridaController.createComRota);
+
+/**
  * [RFS06] Consultar Corridas
  * Todos os usuários autenticados podem consultar suas corridas
  * Filtros são aplicados automaticamente conforme tipo de usuário
@@ -44,6 +51,13 @@ router.put('/:id', corridaController.update);
  * Apenas motoristas podem aceitar corridas
  */
 router.post('/:id/aceitar', isMotorista, corridaController.aceitar);
+
+/**
+ * Finalizar corrida com processamento de pagamento
+ * Apenas o motorista da corrida pode finalizá-la
+ * Processa pagamento via gateway e registra repasse
+ */
+router.post('/:id/finalizar', isMotorista, corridaController.finalizar);
 
 /**
  * [RFS08] Excluir/Cancelar Corrida

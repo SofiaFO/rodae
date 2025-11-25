@@ -226,6 +226,72 @@ class CorridaController {
       });
     }
   }
+
+  /**
+   * Solicitar corrida com cálculo real de rota e valor
+   * POST /api/corridas/com-rota
+   */
+  async createComRota(req, res) {
+    try {
+      const passageiroId = req.userId;
+      const resultado = await corridaService.solicitarCorridaComRotaReal(passageiroId, req.body);
+      
+      res.status(201).json({
+        message: 'Corrida solicitada com sucesso usando cálculo real de rota',
+        data: resultado
+      });
+    } catch (error) {
+      console.error('[CORRIDA CONTROLLER] Erro ao criar corrida com rota:', error);
+      res.status(400).json({
+        error: 'Erro ao solicitar corrida',
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Finalizar corrida com processamento de pagamento
+   * POST /api/corridas/:id/finalizar
+   */
+  async finalizar(req, res) {
+    try {
+      const corridaId = parseInt(req.params.id);
+      const motoristaId = req.userId;
+      const dadosFinalizacao = req.body; // { valorFinal?: number }
+
+      const resultado = await corridaService.finalizarCorridaComPagamento(
+        corridaId,
+        motoristaId,
+        dadosFinalizacao
+      );
+      
+      res.json({
+        message: 'Corrida finalizada e pagamento processado com sucesso',
+        data: resultado
+      });
+    } catch (error) {
+      console.error('[CORRIDA CONTROLLER] Erro ao finalizar corrida:', error);
+      
+      if (error.message.includes('não encontrada')) {
+        return res.status(404).json({
+          error: 'Corrida não encontrada',
+          message: error.message
+        });
+      }
+
+      if (error.message.includes('permissão') || error.message.includes('Apenas o motorista')) {
+        return res.status(403).json({
+          error: 'Acesso negado',
+          message: error.message
+        });
+      }
+
+      res.status(400).json({
+        error: 'Erro ao finalizar corrida',
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = new CorridaController();
