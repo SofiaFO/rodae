@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,13 +7,32 @@ import Navbar from "@/components/Navbar";
 import ListaCorridas from "@/components/ListaCorridas";
 import CorridasDisponiveis from "@/components/CorridasDisponiveis";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
+import GerenciarPagamentos from "@/components/GerenciarPagamentos";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
 const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState("em_andamento");
   const { toast } = useToast();
+  const { token } = useAuthStore();
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    loadEstatisticas();
+  }, []);
+
+  const loadEstatisticas = async () => {
+    try {
+      const response = await api.getEstatisticasMotorista(token!);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+      // Manter valores mockados em caso de erro
+    }
+  };
 
   const handleToggleOnline = () => {
     setIsOnline(!isOnline);
@@ -69,8 +88,10 @@ const DriverDashboard = () => {
               <DollarSign className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">R$ 108,00</div>
-              <p className="text-xs text-muted-foreground">3 corridas</p>
+              <div className="text-2xl font-bold text-primary">
+                R$ {stats?.hoje?.receita?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">{stats?.hoje?.corridas || 0} corridas</p>
             </CardContent>
           </Card>
 
@@ -80,8 +101,14 @@ const DriverDashboard = () => {
               <TrendingUp className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-secondary">R$ 845,00</div>
-              <p className="text-xs text-muted-foreground">+12% vs semana anterior</p>
+              <div className="text-2xl font-bold text-secondary">
+                R$ {stats?.estaSemana?.receita?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats?.estaSemana?.cresceu ? '📈' : '📉'} 
+                {stats?.estaSemana?.porcentagemCrescimento > 0 ? '+' : ''}
+                {stats?.estaSemana?.porcentagemCrescimento?.toFixed(1) || '0'}% vs semana anterior
+              </p>
             </CardContent>
           </Card>
 
@@ -91,19 +118,25 @@ const DriverDashboard = () => {
               <Star className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-accent">4.9</div>
-              <p className="text-xs text-muted-foreground">156 avaliações</p>
+              <div className="text-2xl font-bold text-accent">
+                {stats?.avaliacoes?.media?.toFixed(1) || '0.0'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats?.avaliacoes?.total || 0} avaliações
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Horas Online</CardTitle>
-              <Clock className="w-4 h-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Ganho</CardTitle>
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">6.5h</div>
-              <p className="text-xs text-muted-foreground">Hoje</p>
+              <div className="text-2xl font-bold">
+                R$ {stats?.receitaTotalGeral?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">Todas as corridas</p>
             </CardContent>
           </Card>
         </div>
@@ -115,16 +148,18 @@ const DriverDashboard = () => {
               <CorridasDisponiveis />
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                   <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                   <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
+                  <TabsTrigger value="pagamentos">Repasses</TabsTrigger>
                 </TabsList>
                 <TabsContent value="em_andamento" className="mt-6">
                   <ListaCorridas 
                     filtroStatus="EM_ANDAMENTO" 
                     titulo="Minhas Corridas em Andamento"
                     refresh={refreshKey}
+                    onCorridaFinalizada={loadEstatisticas}
                   />
                 </TabsContent>
                 <TabsContent value="finalizadas" className="mt-6">
@@ -143,6 +178,9 @@ const DriverDashboard = () => {
                 </TabsContent>
                 <TabsContent value="avaliacoes" className="mt-6">
                   <MinhasAvaliacoes />
+                </TabsContent>
+                <TabsContent value="pagamentos" className="mt-6">
+                  <GerenciarPagamentos />
                 </TabsContent>
               </Tabs>
             )}

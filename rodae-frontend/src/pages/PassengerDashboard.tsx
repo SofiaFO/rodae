@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,15 +8,35 @@ import SolicitarCorrida from "@/components/SolicitarCorrida";
 import ListaCorridas from "@/components/ListaCorridas";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import EnderecosFavoritos from "@/components/EnderecosFavoritos";
+import GerenciarPagamentos from "@/components/GerenciarPagamentos";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
 const PassengerDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
+  const { token } = useAuthStore();
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    loadEstatisticas();
+  }, []);
+
+  const loadEstatisticas = async () => {
+    try {
+      const response = await api.getEstatisticasPassageiro(token!);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+      // Manter valores mockados em caso de erro
+    }
+  };
 
   const handleCorridaCriada = () => {
-    // Força atualização da lista de corridas
+    // Força atualização da lista de corridas e estatísticas
     setRefreshKey(prev => prev + 1);
+    loadEstatisticas();
   };
 
   return (
@@ -47,21 +67,21 @@ const PassengerDashboard = () => {
                     <Clock className="w-5 h-5 text-primary" />
                     <span className="text-sm">Corridas totais</span>
                   </div>
-                  <span className="font-bold">127</span>
+                  <span className="font-bold">{stats?.corridas?.total || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-accent" />
                     <span className="text-sm">Avaliação média</span>
                   </div>
-                  <span className="font-bold">4.9</span>
+                  <span className="font-bold">{stats?.avaliacoes?.media?.toFixed(1) || '0.0'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-secondary" />
                     <span className="text-sm">Gastos totais</span>
                   </div>
-                  <span className="font-bold">R$ 2.450</span>
+                  <span className="font-bold">R$ {stats?.financeiro?.gastoTotal?.toFixed(2) || '0.00'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -90,8 +110,14 @@ const PassengerDashboard = () => {
                 <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
                 <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                 <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
+                <TabsTrigger value="avaliacoes">Minhas Avaliações</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
                 <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
                 <TabsTrigger value="enderecos">Endereços</TabsTrigger>
+                <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -119,6 +145,9 @@ const PassengerDashboard = () => {
               </TabsContent>
               <TabsContent value="enderecos" className="mt-6">
                 <EnderecosFavoritos />
+              </TabsContent>
+              <TabsContent value="pagamentos" className="mt-6">
+                <GerenciarPagamentos />
               </TabsContent>
             </Tabs>
           </div>

@@ -10,7 +10,8 @@
     "test:passageiro": "node tests/passageiro-standalone.test.js",
     "test:motorista": "node tests/motorista-standalone.test.js",
     "test:admin": "node tests/admin-standalone.test.js",
-    "test:avaliacao": "node tests/avaliacao.test.js"
+    "test:avaliacao": "node tests/avaliacao.test.js",
+    "test:enderecos": "node tests/enderecos.test.js"
   },
   "keywords": [
     "selenium",
