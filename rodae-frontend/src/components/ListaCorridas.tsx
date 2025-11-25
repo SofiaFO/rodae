@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Calendar, DollarSign, User, Car, XCircle, Eye, CheckCircle } from "lucide-react";
+import { MapPin, Calendar, DollarSign, User, Car, XCircle, Eye, CheckCircle, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { formatarEndereco } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
+import AvaliacaoDialog from "./AvaliacaoDialog";
 
 interface Corrida {
   id: number;
@@ -52,6 +53,10 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
   const [showCancelar, setShowCancelar] = useState(false);
   const [motivoCancelamento, setMotivoCancelamento] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Avaliação
+  const [showAvaliacao, setShowAvaliacao] = useState(false);
+  const [corridaAvaliar, setCorridaAvaliar] = useState<Corrida | null>(null);
 
   const loadCorridas = async () => {
     try {
@@ -267,6 +272,19 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
                       </Button>
                     </>
                   )}
+                  {corrida.status === 'FINALIZADA' && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        setCorridaAvaliar(corrida);
+                        setShowAvaliacao(true);
+                      }}
+                    >
+                      <Star className="w-4 h-4 mr-1" />
+                      Avaliar
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -442,6 +460,28 @@ const ListaCorridas = ({ filtroStatus, titulo = "Minhas Corridas", refresh, onCo
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Avaliação */}
+      {corridaAvaliar && (
+        <AvaliacaoDialog
+          open={showAvaliacao}
+          onOpenChange={setShowAvaliacao}
+          corridaId={corridaAvaliar.id}
+          usuarioParaId={
+            user?.tipo === 'PASSAGEIRO'
+              ? corridaAvaliar.motorista?.id || 0
+              : corridaAvaliar.passageiro.id
+          }
+          avaliadoNome={
+            user?.tipo === 'PASSAGEIRO'
+              ? corridaAvaliar.motorista?.nome || 'Motorista'
+              : corridaAvaliar.passageiro.nome
+          }
+          onSuccess={() => {
+            loadCorridas();
+          }}
+        />
+      )}
     </>
   );
 };

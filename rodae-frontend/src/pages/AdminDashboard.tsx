@@ -14,6 +14,7 @@ import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
 import DashboardResumo from "@/components/DashboardResumo";
 import ListaCorridas from "@/components/ListaCorridas";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
 import RelatoriosCorridasDetalhado from "@/components/RelatoriosCorridasDetalhado";
 import RelatoriosMotoristasDetalhado from "@/components/RelatoriosMotoristasDetalhado";
 import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
@@ -304,6 +305,9 @@ const AdminDashboard = () => {
               <MapPin className="w-4 h-4" />
               Corridas
             </TabsTrigger>
+            <TabsTrigger value="avaliacoes" className="gap-2">
+              <Star className="w-4 h-4" />
+              Avaliações
             <TabsTrigger value="pagamentos" className="gap-2">
               <CreditCard className="w-4 h-4" />
               Pagamentos
@@ -536,6 +540,8 @@ const AdminDashboard = () => {
             </Tabs>
           </TabsContent>
 
+          <TabsContent value="avaliacoes">
+            <MinhasAvaliacoes />
           <TabsContent value="pagamentos">
             <AdminPagamentos />
           </TabsContent>
