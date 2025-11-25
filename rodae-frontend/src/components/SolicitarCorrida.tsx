@@ -74,16 +74,25 @@ const SolicitarCorrida = ({ onCorridaCriada }: SolicitarCorridaProps) => {
     try {
       const formaSelecionada = formasPagamento.find(f => f.id.toString() === formaPagamentoId);
       
-      const response = await api.createCorrida(token!, {
+      const response = await api.createCorridaComRota(token!, {
         origem,
         destino,
         formaPagamento: formaSelecionada?.tipoPagamento || 'PIX',
         opcaoCorrida,
       });
 
+      console.log('Response da API:', response);
+
+      // Verifica se a resposta tem os dados esperados
+      if (!response || !response.corrida) {
+        throw new Error('Resposta inválida da API');
+      }
+
+      const { corrida, detalhesRota, detalhesValor } = response;
+
       toast({
         title: "Corrida solicitada!",
-        description: `Valor estimado: R$ ${response.data.valorEstimado.toFixed(2)}. Aguarde um motorista aceitar.`,
+        description: `Distância: ${detalhesRota?.distancia || '0'} km | Duração: ${detalhesRota?.duracao || '0 min'} | Valor: R$ ${corrida.valorEstimado.toFixed(2)}. Aguarde um motorista aceitar.`,
       });
 
       // Limpar formulário

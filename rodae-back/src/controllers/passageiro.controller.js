@@ -86,6 +86,29 @@ class PassageiroController {
       });
     }
   }
+
+  /**
+   * Obter estatísticas do passageiro
+   * GET /api/passageiros/me/estatisticas
+   */
+  async getEstatisticas(req, res) {
+    try {
+      const passageiroId = req.userId;
+      
+      const estatisticas = await passageiroService.getEstatisticas(passageiroId);
+      
+      res.json({
+        message: 'Estatísticas obtidas com sucesso',
+        data: estatisticas
+      });
+    } catch (error) {
+      console.error('[PASSAGEIRO CONTROLLER] Erro ao obter estatísticas:', error);
+      res.status(500).json({
+        error: 'Erro ao obter estatísticas',
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = new PassageiroController();

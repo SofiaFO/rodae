@@ -5,12 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import Navbar from "@/components/Navbar";
+import DashboardResumo from "@/components/DashboardResumo";
 import ListaCorridas from "@/components/ListaCorridas";
+import RelatoriosCorridasDetalhado from "@/components/RelatoriosCorridasDetalhado";
+import RelatoriosMotoristasDetalhado from "@/components/RelatoriosMotoristasDetalhado";
+import MinhasAvaliacoes from "@/components/MinhasAvaliacoes";
+import AdminPagamentos from "@/pages/AdminPagamentos";
 
 interface Motorista {
   id: number;
@@ -54,6 +61,8 @@ const AdminDashboard = () => {
   const [showPassageiroDialog, setShowPassageiroDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeletePassageiroDialog, setShowDeletePassageiroDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [refreshCorridas, setRefreshCorridas] = useState(0);
 
@@ -129,16 +138,52 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRejectConfirm = async () => {
+    if (!selectedMotorista) return;
+    
+    if (!rejectReason.trim()) {
+      toast({
+        title: "Motivo obrigatório",
+        description: "Por favor, informe o motivo da rejeição.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // Usa a rota de rejeitar com motivo
+      await api.rejeitarMotorista(token!, selectedMotorista.motorista.id, rejectReason);
+      toast({
+        title: "Motorista rejeitado",
+        description: `${selectedMotorista.nome} foi rejeitado da plataforma.`,
+      });
+      await loadMotoristas();
+      setShowRejectDialog(false);
+      setShowDetailsDialog(false);
+      setRejectReason('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: "Erro ao rejeitar motorista",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (!selectedMotorista) return;
     
     setIsLoading(true);
     try {
-      // Usa a rota de rejeitar para desativar o motorista
-      await api.rejeitarMotorista(token!, selectedMotorista.motorista.id);
+      // Excluir motorista completamente
+      await api.deleteMotorista(token!, selectedMotorista.motorista.id);
       toast({
-        title: "Motorista desativado",
-        description: `${selectedMotorista.nome} foi desativado da plataforma.`,
+        title: "Motorista excluído",
+        description: `${selectedMotorista.nome} foi removido da plataforma.`,
       });
       await loadMotoristas();
       setShowDeleteDialog(false);
@@ -146,7 +191,7 @@ const AdminDashboard = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
-        title: "Erro ao desativar motorista",
+        title: "Erro ao excluir motorista",
         description: errorMessage,
         variant: "destructive",
       });
@@ -237,8 +282,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs para Motoristas e Corridas */}
-        <Tabs defaultValue="pendentes" className="space-y-4">
+        <Tabs defaultValue="dashboard" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="dashboard" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="pendentes" className="gap-2">
               <Clock className="w-4 h-4" />
               Pendentes ({motoristasPendentes.length})
@@ -255,7 +304,23 @@ const AdminDashboard = () => {
               <MapPin className="w-4 h-4" />
               Corridas
             </TabsTrigger>
+            <TabsTrigger value="pagamentos" className="gap-2">
+              <CreditCard className="w-4 h-4" />
+              Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="relatorios-corridas" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Relatórios Corridas
+            </TabsTrigger>
+            <TabsTrigger value="relatorios-motoristas" className="gap-2">
+              <Car className="w-4 h-4" />
+              Relatórios Motoristas
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <DashboardResumo />
+          </TabsContent>
 
           <TabsContent value="pendentes">
             <Card>
@@ -441,20 +506,11 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="corridas">
-            <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="em_andamento">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Em Andamento
-                </TabsTrigger>
-                <TabsTrigger value="finalizadas">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finalizadas
-                </TabsTrigger>
-                <TabsTrigger value="canceladas">
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Canceladas
-                </TabsTrigger>
+            <Tabs defaultValue="em_andamento" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
               </TabsList>
               <TabsContent value="em_andamento" className="mt-6">
                 <ListaCorridas 
@@ -470,7 +526,7 @@ const AdminDashboard = () => {
                   refresh={refreshCorridas}
                 />
               </TabsContent>
-              <TabsContent value="canceladas" className="mt-6">
+              <TabsContent value="canceladas">
                 <ListaCorridas 
                   filtroStatus="CANCELADA" 
                   titulo="Corridas Canceladas"
@@ -478,6 +534,18 @@ const AdminDashboard = () => {
                 />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="pagamentos">
+            <AdminPagamentos />
+          </TabsContent>
+
+          <TabsContent value="relatorios-corridas">
+            <RelatoriosCorridasDetalhado />
+          </TabsContent>
+
+          <TabsContent value="relatorios-motoristas">
+            <RelatoriosMotoristasDetalhado />
           </TabsContent>
         </Tabs>
 
@@ -560,14 +628,70 @@ const AdminDashboard = () => {
                 Desativar da Plataforma
               </Button>
               {selectedMotorista?.status === 'PENDENTE' && (
-                <Button
-                  onClick={() => handleAprovar(selectedMotorista)}
-                  disabled={isLoading}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Aprovando...' : 'Aprovar Motorista'}
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      setShowDetailsDialog(false);
+                      setShowRejectDialog(true);
+                    }}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Rejeitar
+                  </Button>
+                  <Button
+                    onClick={() => handleAprovar(selectedMotorista)}
+                    disabled={isLoading}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {isLoading ? 'Aprovando...' : 'Aprovar Motorista'}
+                  </Button>
+                </>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog de Rejeição de Motorista */}
+        <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rejeitar Motorista</DialogTitle>
+              <DialogDescription>
+                Informe o motivo da rejeição de {selectedMotorista?.nome}. Esta ação não pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reject-reason">Motivo da Rejeição</Label>
+                <Input
+                  id="reject-reason"
+                  placeholder="Ex: Documentos inválidos, CNH vencida, etc."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setRejectReason('');
+                }}
+                disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleRejectConfirm}
+                disabled={isLoading || !rejectReason.trim()}
+              >
+                {isLoading ? 'Rejeitando...' : 'Confirmar Rejeição'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

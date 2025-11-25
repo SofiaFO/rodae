@@ -28,19 +28,20 @@ const Auth = () => {
     try {
       const response = await api.login(email, senha);
       
-      login(response.data.token, response.data.usuario);
+      // api.login agora retorna diretamente { token, usuario }
+      login(response.token, response.usuario);
       
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${response.data.usuario.nome}!`,
+        description: `Bem-vindo, ${response.usuario.nome}!`,
       });
 
       // Redirecionar baseado no tipo de usuário
-      if (response.data.usuario.tipo === 'PASSAGEIRO') {
+      if (response.usuario.tipo === 'PASSAGEIRO') {
         navigate('/passageiro');
-      } else if (response.data.usuario.tipo === 'MOTORISTA') {
+      } else if (response.usuario.tipo === 'MOTORISTA') {
         navigate('/motorista');
-      } else if (response.data.usuario.tipo === 'ADMIN') {
+      } else if (response.usuario.tipo === 'ADMIN') {
         navigate('/admin');
       }
     } catch (error: any) {
@@ -81,12 +82,13 @@ const Auth = () => {
       
       toast({
         title: "Cadastro realizado com sucesso!",
-        description: response.data.message || "Sua conta foi criada.",
+        description: response.message || "Sua conta foi criada.",
       });
 
       // Se for passageiro, faz login automático
-      if (userType === 'PASSAGEIRO' && response.data.token) {
-        login(response.data.token, response.data.usuario);
+      if (userType === 'PASSAGEIRO' && response.token) {
+        // api.register agora retorna diretamente { token, usuario }
+        login(response.token, response.usuario);
         navigate('/passageiro');
       } else {
         // Se for motorista, mostra mensagem e vai para login

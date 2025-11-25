@@ -86,6 +86,29 @@ class MotoristaController {
       });
     }
   }
+
+  /**
+   * Obter estatísticas do motorista
+   * GET /api/motoristas/me/estatisticas
+   */
+  async getEstatisticas(req, res) {
+    try {
+      const motoristaId = req.userId;
+      
+      const estatisticas = await motoristaService.getEstatisticas(motoristaId);
+      
+      res.json({
+        message: 'Estatísticas obtidas com sucesso',
+        data: estatisticas
+      });
+    } catch (error) {
+      console.error('[MOTORISTA CONTROLLER] Erro ao obter estatísticas:', error);
+      res.status(500).json({
+        error: 'Erro ao obter estatísticas',
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = new MotoristaController();
