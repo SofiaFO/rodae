@@ -21,7 +21,11 @@ interface CorridaDisponivel {
   };
 }
 
-const CorridasDisponiveis = () => {
+interface CorridasDisponiveisProps {
+  onCorridaAceita?: () => void;
+}
+
+const CorridasDisponiveis = ({ onCorridaAceita }: CorridasDisponiveisProps) => {
   const { token } = useAuthStore();
   const { toast } = useToast();
   const [corridas, setCorridas] = useState<CorridaDisponivel[]>([]);
@@ -63,6 +67,11 @@ const CorridasDisponiveis = () => {
       });
 
       loadCorridasDisponiveis();
+      
+      // Notificar o componente pai para atualizar a lista de corridas ativas
+      if (onCorridaAceita) {
+        onCorridaAceita();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({

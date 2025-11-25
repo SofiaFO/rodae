@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Car, Clock, CheckCircle, XCircle, Eye, Trash2, MapPin, Activity } from "lucide-react";
+import { Users, Car, CheckCircle, XCircle, Eye, Trash2, Clock, Search, X, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -45,9 +48,10 @@ interface Passageiro {
 const AdminDashboard = () => {
   const { token } = useAuthStore();
   const { toast } = useToast();
-  const [motoristasPendentes, setMotoristasPendentes] = useState<Motorista[]>([]);
-  const [motoristasAtivos, setMotoristasAtivos] = useState<Motorista[]>([]);
+  const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
+  const [filteredPassageiros, setFilteredPassageiros] = useState<Passageiro[]>([]);
+  const [filteredMotoristas, setFilteredMotoristas] = useState<Motorista[]>([]);
   const [selectedMotorista, setSelectedMotorista] = useState<Motorista | null>(null);
   const [selectedPassageiro, setSelectedPassageiro] = useState<Passageiro | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -55,6 +59,17 @@ const AdminDashboard = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeletePassageiroDialog, setShowDeletePassageiroDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Filtros para Passageiros
+  const [passageiroFilters, setPassageiroFilters] = useState({
+    nome: '',
+  });
+
+  // Filtros para Motoristas
+  const [motoristaFilters, setMotoristaFilters] = useState({
+    nome: '',
+    status: 'TODOS' as 'TODOS' | 'PENDENTE' | 'ATIVO' | 'INATIVO',
+  });
   const [refreshCorridas, setRefreshCorridas] = useState(0);
 
   const loadMotoristas = async () => {
@@ -63,11 +78,10 @@ const AdminDashboard = () => {
       const response = await api.getAllMotoristas(token!);
       console.log('Resposta da API:', response);
       
-      const motoristas = response.data || [];
-      console.log('Motoristas recebidos:', motoristas);
+      const allMotoristas = response.data || [];
+      console.log('Motoristas recebidos:', allMotoristas);
       
-      setMotoristasPendentes(motoristas.filter((m: Motorista) => m.status === 'PENDENTE'));
-      setMotoristasAtivos(motoristas.filter((m: Motorista) => m.status === 'ATIVO'));
+      setMotoristas(allMotoristas);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao carregar motoristas:', error);
@@ -100,7 +114,48 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadMotoristas();
     loadPassageiros();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Filtrar passageiros quando os filtros mudarem
+  useEffect(() => {
+    let filtered = [...passageiros];
+
+    if (passageiroFilters.nome) {
+      filtered = filtered.filter(p =>
+        p.usuario.nome.toLowerCase().includes(passageiroFilters.nome.toLowerCase())
+      );
+    }
+
+    setFilteredPassageiros(filtered);
+  }, [passageiros, passageiroFilters]);
+
+  // Filtrar motoristas quando os filtros mudarem
+  useEffect(() => {
+    let filtered = [...motoristas];
+
+    if (motoristaFilters.nome) {
+      filtered = filtered.filter(m =>
+        m.nome.toLowerCase().includes(motoristaFilters.nome.toLowerCase())
+      );
+    }
+
+    if (motoristaFilters.status !== 'TODOS') {
+      filtered = filtered.filter(m =>
+        m.status === motoristaFilters.status
+      );
+    }
+
+    setFilteredMotoristas(filtered);
+  }, [motoristas, motoristaFilters]);
+
+  const clearPassageiroFilters = () => {
+    setPassageiroFilters({ nome: '' });
+  };
+
+  const clearMotoristaFilters = () => {
+    setMotoristaFilters({ nome: '', status: 'TODOS' });
+  };
 
   const handleViewDetails = (motorista: Motorista) => {
     setSelectedMotorista(motorista);
@@ -192,22 +247,28 @@ const AdminDashboard = () => {
 
   const stats = [
     { 
+      title: "Total de Motoristas", 
+      value: filteredMotoristas.length.toString(), 
+      icon: Car, 
+      color: "text-blue-600" 
+    },
+    { 
       title: "Motoristas Pendentes", 
-      value: motoristasPendentes.length.toString(), 
+      value: filteredMotoristas.filter(m => m.status === 'PENDENTE').length.toString(), 
       icon: Clock, 
       color: "text-yellow-600" 
     },
     { 
       title: "Motoristas Ativos", 
-      value: motoristasAtivos.length.toString(), 
-      icon: Car, 
+      value: filteredMotoristas.filter(m => m.status === 'ATIVO').length.toString(), 
+      icon: CheckCircle, 
       color: "text-green-600" 
     },
     { 
       title: "Total de Passageiros", 
-      value: passageiros.length.toString(), 
+      value: filteredPassageiros.length.toString(), 
       icon: Users, 
-      color: "text-blue-600" 
+      color: "text-purple-600" 
     },
   ];
 
@@ -236,20 +297,16 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Tabs para Motoristas e Corridas */}
-        <Tabs defaultValue="pendentes" className="space-y-4">
+        {/* Tabs para Motoristas, Passageiros e Corridas */}
+        <Tabs defaultValue="motoristas" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="pendentes" className="gap-2">
-              <Clock className="w-4 h-4" />
-              Pendentes ({motoristasPendentes.length})
-            </TabsTrigger>
-            <TabsTrigger value="ativos" className="gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Ativos ({motoristasAtivos.length})
+            <TabsTrigger value="motoristas" className="gap-2">
+              <Car className="w-4 h-4" />
+              Motoristas ({filteredMotoristas.length})
             </TabsTrigger>
             <TabsTrigger value="passageiros" className="gap-2">
               <Users className="w-4 h-4" />
-              Passageiros ({passageiros.length})
+              Passageiros ({filteredPassageiros.length})
             </TabsTrigger>
             <TabsTrigger value="corridas" className="gap-2">
               <MapPin className="w-4 h-4" />
@@ -257,12 +314,58 @@ const AdminDashboard = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pendentes">
+          <TabsContent value="motoristas">
             <Card>
               <CardHeader>
-                <CardTitle>Motoristas Aguardando Aprovação</CardTitle>
+                <CardTitle>Gestão de Motoristas</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Filtros */}
+                <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Search className="w-4 h-4" />
+                    <h3 className="font-semibold">Filtros de Busca</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="motorista-nome">Nome</Label>
+                      <Input
+                        id="motorista-nome"
+                        placeholder="Buscar por nome..."
+                        value={motoristaFilters.nome}
+                        onChange={(e) => setMotoristaFilters({ ...motoristaFilters, nome: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="motorista-status">Status</Label>
+                      <Select
+                        value={motoristaFilters.status}
+                        onValueChange={(value) => setMotoristaFilters({ ...motoristaFilters, status: value as any })}
+                      >
+                        <SelectTrigger id="motorista-status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TODOS">Todos</SelectItem>
+                          <SelectItem value="PENDENTE">Pendente</SelectItem>
+                          <SelectItem value="ATIVO">Ativo</SelectItem>
+                          <SelectItem value="INATIVO">Inativo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearMotoristaFilters}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                </div>
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -275,85 +378,35 @@ const AdminDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {motoristasPendentes.length === 0 ? (
+                    {filteredMotoristas.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-muted-foreground">
-                          Nenhum motorista pendente
+                          Nenhum motorista encontrado
                         </TableCell>
                       </TableRow>
                     ) : (
-                      motoristasPendentes.map((motorista) => (
+                      filteredMotoristas.map((motorista) => (
                         <TableRow key={motorista.id}>
                           <TableCell className="font-medium">{motorista.nome}</TableCell>
                           <TableCell>{motorista.email}</TableCell>
                           <TableCell>{motorista.telefone}</TableCell>
                           <TableCell>{motorista.motorista?.cnh || 'N/A'}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
-                              Pendente
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleViewDetails(motorista)}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Ver Detalhes
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => openDeleteDialog(motorista)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="ativos">
-            <Card>
-              <CardHeader>
-                <CardTitle>Motoristas Ativos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Telefone</TableHead>
-                      <TableHead>Placa</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {motoristasAtivos.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground">
-                          Nenhum motorista ativo
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      motoristasAtivos.map((motorista) => (
-                        <TableRow key={motorista.id}>
-                          <TableCell className="font-medium">{motorista.nome}</TableCell>
-                          <TableCell>{motorista.email}</TableCell>
-                          <TableCell>{motorista.telefone}</TableCell>
-                          <TableCell>{motorista.motorista?.placaVeiculo || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                              Ativo
-                            </Badge>
+                            {motorista.status === 'PENDENTE' && (
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                                Pendente
+                              </Badge>
+                            )}
+                            {motorista.status === 'ATIVO' && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                Ativo
+                              </Badge>
+                            )}
+                            {motorista.status === 'INATIVO' && (
+                              <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">
+                                Inativo
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-right space-x-2">
                             <Button
@@ -387,6 +440,35 @@ const AdminDashboard = () => {
                 <CardTitle>Passageiros Cadastrados</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Filtros */}
+                <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Search className="w-4 h-4" />
+                    <h3 className="font-semibold">Filtros de Busca</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="passageiro-nome">Nome</Label>
+                      <Input
+                        id="passageiro-nome"
+                        placeholder="Buscar por nome..."
+                        value={passageiroFilters.nome}
+                        onChange={(e) => setPassageiroFilters({ ...passageiroFilters, nome: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearPassageiroFilters}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                </div>
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -398,14 +480,14 @@ const AdminDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {passageiros.length === 0 ? (
+                    {filteredPassageiros.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground">
                           Nenhum passageiro cadastrado
                         </TableCell>
                       </TableRow>
                     ) : (
-                      passageiros.map((passageiro) => (
+                      filteredPassageiros.map((passageiro) => (
                         <TableRow key={passageiro.id}>
                           <TableCell className="font-medium">{passageiro.usuario.nome}</TableCell>
                           <TableCell>{passageiro.usuario.email}</TableCell>
@@ -441,47 +523,38 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="corridas">
-            <Tabs defaultValue="em_andamento" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="em_andamento">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Em Andamento
-                </TabsTrigger>
-                <TabsTrigger value="finalizadas">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finalizadas
-                </TabsTrigger>
-                <TabsTrigger value="canceladas">
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Canceladas
-                </TabsTrigger>
+            <Tabs defaultValue="em_andamento" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+                <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
+                <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
               </TabsList>
-              <TabsContent value="em_andamento" className="mt-6">
+
+              <TabsContent value="em_andamento">
                 <ListaCorridas 
                   filtroStatus="EM_ANDAMENTO" 
-                  titulo="Corridas em Andamento"
-                  refresh={refreshCorridas}
+                  titulo="Corridas em Andamento" 
                 />
               </TabsContent>
-              <TabsContent value="finalizadas" className="mt-6">
+
+              <TabsContent value="finalizadas">
                 <ListaCorridas 
                   filtroStatus="FINALIZADA" 
-                  titulo="Corridas Finalizadas"
-                  refresh={refreshCorridas}
+                  titulo="Corridas Finalizadas" 
                 />
               </TabsContent>
-              <TabsContent value="canceladas" className="mt-6">
+
+              <TabsContent value="canceladas">
                 <ListaCorridas 
                   filtroStatus="CANCELADA" 
-                  titulo="Corridas Canceladas"
-                  refresh={refreshCorridas}
+                  titulo="Corridas Canceladas" 
                 />
               </TabsContent>
             </Tabs>
           </TabsContent>
         </Tabs>
 
-        {/* Dialog de Detalhes */}
+        {/* Dialog de Detalhes do Motorista */}
         <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>

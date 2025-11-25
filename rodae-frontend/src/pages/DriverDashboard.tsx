@@ -23,6 +23,11 @@ const DriverDashboard = () => {
     });
   };
 
+  const handleCorridaAceita = () => {
+    // Atualizar a lista de corridas ativas
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Navbar />
@@ -107,24 +112,34 @@ const DriverDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Corridas Disponíveis ou Minhas Corridas */}
-          <div className="lg:col-span-2">
-            {isOnline ? (
-              <CorridasDisponiveis />
-            ) : (
-              <Tabs defaultValue="em_andamento" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="em_andamento">Em Andamento</TabsTrigger>
+          {/* Corridas Disponíveis e Minhas Corridas */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Corridas Aceitas / Em Andamento - sempre visível */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Minhas Corridas Ativas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ListaCorridas 
+                  filtroStatus="EM_ANDAMENTO" 
+                  titulo=""
+                  refresh={refreshKey}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Solicitações de Corridas - só quando online */}
+            {isOnline && (
+              <CorridasDisponiveis onCorridaAceita={handleCorridaAceita} />
+            )}
+
+            {/* Histórico de Corridas - só quando offline */}
+            {!isOnline && (
+              <Tabs defaultValue="finalizadas" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="finalizadas">Finalizadas</TabsTrigger>
                   <TabsTrigger value="canceladas">Canceladas</TabsTrigger>
                 </TabsList>
-                <TabsContent value="em_andamento" className="mt-6">
-                  <ListaCorridas 
-                    filtroStatus="EM_ANDAMENTO" 
-                    titulo="Minhas Corridas em Andamento"
-                    refresh={refreshKey}
-                  />
-                </TabsContent>
                 <TabsContent value="finalizadas" className="mt-6">
                   <ListaCorridas 
                     filtroStatus="FINALIZADA" 
